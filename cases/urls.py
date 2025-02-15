@@ -27,7 +27,7 @@ from cases.views.cases import (
     DocumentUpdateView,
 )
 
-app_name = "cases"
+app_name = "case"
 urlpatterns = [
     # Client URLs
     path("clients/", ClientListView.as_view(), name="client-list"),
@@ -44,9 +44,9 @@ urlpatterns = [
         name="client-delete",
     ),
     # Case URLs
-    path("cases/", CaseListView.as_view(), name="case-list"),
-    path("cases/<int:pk>/", CaseDetailView.as_view(), name="case-detail"),
-    path("cases/create/", CaseCreateView.as_view(), name="case-create"),
+    path('', CaseListView.as_view(), name='case-list'),
+    path("case/<str:slug>/", CaseDetailView.as_view(), name="case-detail"),
+    path("case-create/", CaseCreateView.as_view(), name="case-create"),
     path("cases/<int:pk>/update/", CaseUpdateView.as_view(), name="case-update"),
     path("cases/<int:pk>/delete/", CaseDeleteView.as_view(), name="case-delete"),
     # Document URLs

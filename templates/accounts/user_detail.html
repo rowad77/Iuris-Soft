@@ -1,18 +1,24 @@
-{% extends 'base.html' %} {% block content %}
-<div class="content-header">
+{% extends 'base.html' %} 
+{% block content %}
+<div class="app-content-header">
   <div class="container-fluid">
-    <div class="row mb-2">
+    <div class="row">
+      <div class="col-sm-6"><a href="{% url "dashboard:index" %}">Dashboard</a></div>
       <div class="col-sm-6">
-        <h1 class="m-0">User Detail</h1>
+        <ol class="breadcrumb float-sm-end">
+          <li class="breadcrumb-item"><a href="{% url "accounts:users" %}">All Users</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Manage Users</li>
+        </ol>
       </div>
     </div>
   </div>
 </div>
-<div class="content">
+
+<div class="app-content">
   <div class="container-fluid">
-    <div class="row">
-      <div class="col-12">
-        <div class="card">
+    <div class="row justify-content-center w-50">
+      <div class="col-lg-12 p-5 m-5">
+        <div class="card mb-4">
           <div class="card-body">
             <p><strong>Username:</strong> {{ object.username }}</p>
             <p><strong>Email:</strong> {{ object.email }}</p>
@@ -27,7 +33,7 @@
               >Back</a
             >
           </div>
-        </div>
+        </div>        
       </div>
     </div>
   </div>

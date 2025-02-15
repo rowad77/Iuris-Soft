@@ -29,7 +29,7 @@
             <i class="nav-icon bi bi-people-fill"></i>
             <p>
               User Management
-              <span class="nav-badge badge text-bg-secondary me-3">6</span>
+              <span class="nav-badge badge text-bg-secondary me-3">{{ global_user_count }}</span>
               <i class="nav-arrow bi bi-chevron-right"></i>
             </p>
           </a>
@@ -38,6 +38,24 @@
               <a href="{% url 'accounts:users' %}" class="nav-link">
                 <i class="nav-icon bi bi-circle"></i>
                 <p>All Users</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon bi bi-briefcase-fill"></i>
+            <p>
+              Cases
+              <span class="nav-badge badge text-bg-secondary me-3">{{ global_case_count }}</span>
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{% url 'case:case-list' %}" class="nav-link">
+                <i class="nav-icon bi bi-circle"></i>
+                <p>All Cases</p>
               </a>
             </li>
           </ul>

@@ -28,6 +28,7 @@ class Case(SlugMixin, TimestampMixin, models.Model):
     case_number = models.CharField(
         max_length=50, default=generate_case_number, unique=True
     )
+    title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     case_type = models.ManyToManyField(CaseType, related_name="case_type", blank=True)

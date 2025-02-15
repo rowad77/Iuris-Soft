@@ -17,6 +17,7 @@ class DocumentType(models.TextChoices):
 
 
 class UserType(models.TextChoices):
+    CLIENT = "Client", "Client"
     JUDGE = "Judge", "Judge"
     ADVOCATE = "Advocate", "Advocate"
     LAWYER = "Lawyer", "Lawyer"

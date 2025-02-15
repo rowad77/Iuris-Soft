@@ -5,9 +5,13 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
 )
+from django.contrib import messages
+
 from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, redirect
 
 from accounts.models import Client
+from cases.forms import CaseForm, DocumentForm
 from cases.models.cases import Case, Document
 
 
@@ -60,13 +64,19 @@ class CaseDetailView(DetailView):
         )
         return context
 
-
 class CaseCreateView(CreateView):
     model = Case
-    template_name = "cases/case_form.html"
-    fields = ["title", "description", "client", "status"]
+    form_class = CaseForm
+    template_name = 'cases/case_form.html'
+    success_url = reverse_lazy('cases:case-list')
 
-
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        if not Client.objects.filter(client_organization=user.organization).exists():
+            messages.warning(request, "No clients found in your organization. Please add a client first.")
+            return redirect("case:client-create")
+        return super().dispatch(request, *args, **kwargs)
+    
 class CaseUpdateView(UpdateView):
     model = Case
     template_name = "cases/case_form.html"
@@ -93,10 +103,15 @@ class DocumentDetailView(DetailView):
 
 class DocumentCreateView(CreateView):
     model = Document
-    template_name = "cases/document_form.html"
-    fields = ["title", "case", "document_type", "file"]
+    form_class = DocumentForm
+    template_name = 'cases/document_form.html'
 
+    def form_valid(self, form):
+        form.instance.case = get_object_or_404(Case, pk=self.kwargs['case_pk'])
+        return super().form_valid(form)
 
+    def get_success_url(self):
+        return reverse_lazy('cases:case-detail', kwargs={'pk': self.object.case.pk})
 class DocumentUpdateView(UpdateView):
     model = Document
     template_name = "cases/document_form.html"

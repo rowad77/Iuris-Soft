@@ -24,6 +24,8 @@ class User(AbstractUser,  SlugMixin,TimestampMixin):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username", "first_name", "last_name"]
 
+    def __str__(self):
+        return self.get_full_name()
 
 class Profile(AddressAndPhoneNumberMixin, SlugMixin, TimestampMixin, models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

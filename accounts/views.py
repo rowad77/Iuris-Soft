@@ -101,8 +101,8 @@ class OrganizationDetailView(DetailView):
 
 class ClientCreateView(CreateView):
     model = Client
-    fields = ["user", "organization"]
-    template_name = "users/client_form.html"
+    fields = ["user", "client_organization"]
+    template_name = "accounts/client/client_form.html"
     success_url = "/clients/"
 
 
