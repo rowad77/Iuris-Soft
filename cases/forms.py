@@ -9,7 +9,7 @@ from .models import Case, Document
 class CaseForm(forms.ModelForm):
     class Meta:
         model = Case
-        fields = ['client', 'case_type', 'status', 'description', 'assigned_lawyer', 'assigned_users']
+        fields = ['title', 'client', 'case_type', 'status', 'description', 'assigned_lawyer', 'assigned_users']
 
         widgets = {
             'case_type': forms.CheckboxSelectMultiple(),
@@ -21,6 +21,7 @@ class CaseForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(
+                Column('title', css_class='col-md-12'),
                 Column('client', css_class='col-md-12'),
                 Column('case_type', css_class='col-md-12'),
             ),

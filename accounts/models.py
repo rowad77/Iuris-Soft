@@ -9,6 +9,13 @@ from utils.mixins import AddressAndPhoneNumberMixin, SlugMixin, TimestampMixin
 
 class User(AbstractUser,  SlugMixin,TimestampMixin):
     email = models.EmailField(unique=True)
+    staff = models.BooleanField(default=False)
+    admin = models.BooleanField(default=False)
+    active = models.BooleanField(default=False) 
+    staff_id = models.CharField(
+        max_length=20, blank=True, null=True, unique=True, verbose_name="Staff ID"
+    )
+    confirmed_email = models.BooleanField(default=False)
     organization = models.ForeignKey(
         "accounts.Organization", on_delete=models.CASCADE, null=True, blank=True
     )
@@ -54,7 +61,7 @@ class Organization(AddressAndPhoneNumberMixin, SlugMixin, TimestampMixin, models
 class Client(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     client_organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="client_organization"
+        Organization, on_delete=models.CASCADE, related_name="client_organization",null=True
     )
 
     def __str__(self):

@@ -47,8 +47,8 @@ urlpatterns = [
     path('', CaseListView.as_view(), name='case-list'),
     path("case/<str:slug>/", CaseDetailView.as_view(), name="case-detail"),
     path("case-create/", CaseCreateView.as_view(), name="case-create"),
-    path("cases/<int:pk>/update/", CaseUpdateView.as_view(), name="case-update"),
-    path("cases/<int:pk>/delete/", CaseDeleteView.as_view(), name="case-delete"),
+    path("<str:slug>/update/", CaseUpdateView.as_view(), name="case-update"),
+    path("<str:slug>/delete/", CaseDeleteView.as_view(), name="case-delete"),
     # Document URLs
     path("documents/", DocumentListView.as_view(), name="document-list"),
     path(

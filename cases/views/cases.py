@@ -68,7 +68,7 @@ class CaseCreateView(CreateView):
     model = Case
     form_class = CaseForm
     template_name = 'cases/case_form.html'
-    success_url = reverse_lazy('cases:case-list')
+    success_url = reverse_lazy('case:case-list')
 
     def dispatch(self, request, *args, **kwargs):
         user = request.user
@@ -76,6 +76,11 @@ class CaseCreateView(CreateView):
             messages.warning(request, "No clients found in your organization. Please add a client first.")
             return redirect("case:client-create")
         return super().dispatch(request, *args, **kwargs)
+    
+    def form_valid(self, form):
+        case = form.save()
+        messages.success(self.request, f"{case.title.title()} successfully created.")
+        return super().form_valid(form)
     
 class CaseUpdateView(UpdateView):
     model = Case

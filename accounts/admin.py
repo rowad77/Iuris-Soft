@@ -1,80 +1,85 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
-from .models import User, Profile, Organization, Client
+from django.contrib.auth import get_user_model
+
+from accounts.forms import UserAdminChangeForm, UserAdminCreationForm
+from .models import  Profile, Organization, Client
+
+User = get_user_model()
 
 
-@admin.register(User)
+class ProfileInline(admin.StackedInline):
+    model = Profile
+    can_delete = False
+
+
 class UserAdmin(BaseUserAdmin):
+    inlines = [ProfileInline]
+    form = UserAdminChangeForm
+    add_form = UserAdminCreationForm
+
     list_display = (
-        "email",
-        "username",
+        "id",
         "first_name",
         "last_name",
-        "is_staff",
-        "is_superadmin",
-        "user_type",
-        "organization",
+        "email",
+        "phone_number",
     )
-    list_filter = ("is_staff", "is_superuser", "is_active", "user_type", "organization")
+    list_selected_related = True
+    list_filter = ("first_name",)
     fieldsets = (
-        (None, {"fields": ("email", "password")}),
-        (_("Personal info"), {"fields": ("first_name", "last_name", "username")}),
         (
-            _("Permissions"),
+            "USER NAMES,EMAIL & PASSWORD",
             {
                 "fields": (
-                    "is_active",
-                    "is_staff",
-                    "is_superuser",
-                    "is_superadmin",
-                    "groups",
-                    "user_permissions",
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "phone_number",
+                    "password",
                 ),
             },
         ),
-        (_("Important dates"), {"fields": ("last_login", "date_joined")}),
         (
-            _("Additional info"),
+            "PERMISSIONS",
             {
                 "fields": (
-                    "organization",
-                    "user_type",
-                    "country",
-                    "hourly_rate",
-                    "phone_number",
-                    "address",
+                     "active",
+                    "staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
                 )
             },
         ),
     )
     add_fieldsets = (
         (
-            None,
+            "USER DETAILS",
             {
                 "classes": ("wide",),
-                "fields": ("email", "username", "password1", "password2"),
+                "fields": (
+                    "first_name",
+                    "last_name",
+                    "username",
+                    "user_type",
+                    "email",
+                    "password1",
+                    "password2",
+                    "staff",
+                     "active",
+                ),
             },
         ),
     )
-    search_fields = ("email", "username", "first_name", "last_name")
+
+    search_fields = ("email",)
     ordering = ("email",)
-    filter_horizontal = (
-        "groups",
-        "user_permissions",
-    )
+    filter_horizontal = ("groups", "user_permissions")
 
 
-@admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "slug", "created", "updated")
-    search_fields = (
-        "user__email",
-        "user__username",
-        "user__first_name",
-        "user__last_name",
-    )
-    readonly_fields = ("slug", "created", "updated")
+admin.site.register(User, UserAdmin)
 
 
 @admin.register(Organization)
@@ -89,15 +94,3 @@ class OrganizationAdmin(admin.ModelAdmin):
     )
     search_fields = ("name", "superadmin__email", "superadmin__username")
     readonly_fields = ("slug", "created", "updated")
-
-
-# @admin.register(Client)
-# class ClientAdmin(admin.ModelAdmin):
-#     list_display = ("user", "client_organization")
-#     search_fields = (
-#         "user__email",
-#         "user__username",
-#         "user__first_name",
-#         "user__last_name",
-#         "client_organization__name",
-#     )
