@@ -7,8 +7,15 @@ from utils.enum import UserType
 from utils.mixins import AddressAndPhoneNumberMixin, SlugMixin, TimestampMixin
 
 
-class User(AbstractUser, TimestampMixin):
+class User(AbstractUser,  SlugMixin,TimestampMixin):
     email = models.EmailField(unique=True)
+    staff = models.BooleanField(default=False)
+    admin = models.BooleanField(default=False)
+    active = models.BooleanField(default=False) 
+    staff_id = models.CharField(
+        max_length=20, blank=True, null=True, unique=True, verbose_name="Staff ID"
+    )
+    confirmed_email = models.BooleanField(default=False)
     organization = models.ForeignKey(
         "accounts.Organization", on_delete=models.CASCADE, null=True, blank=True
     )
@@ -17,10 +24,15 @@ class User(AbstractUser, TimestampMixin):
         max_length=20, choices=UserType.choices, default=UserType.NORMAL
     )
     country = CountryField(default=None, null=True)
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    phone_number = models.CharField(max_length=20, blank=True)
+    address = models.CharField(max_length=50, blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username", "first_name", "last_name"]
 
+    def __str__(self):
+        return self.get_full_name()
 
 class Profile(AddressAndPhoneNumberMixin, SlugMixin, TimestampMixin, models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -44,3 +56,13 @@ class Organization(AddressAndPhoneNumberMixin, SlugMixin, TimestampMixin, models
 
     def __str__(self):
         return self.name
+
+
+class Client(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    client_organization = models.ForeignKey(
+        Organization, on_delete=models.CASCADE, related_name="client_organization",null=True
+    )
+
+    def __str__(self):
+        return self.user.get_full_name() or self.user.username

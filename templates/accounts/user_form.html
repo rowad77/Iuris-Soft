@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="app-content-header">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-6"><h3 class="mb-0">Dashboard</h3></div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-end">
+          <li class="breadcrumb-item"><a href="{% url "accounts:users" %}">All Users</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Manage Users</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="app-content">
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card mb-4">
+          <div class="card-header border-0">
+            <div class="d-flex justify-content-center">
+              <h3 class="card-title"><h2>{% if form.instance.pk %}Edit {{form.instance.first_name|title}}'s details {% else %}Create User{% endif %}</h3>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="d-flex">
+              <form method="post">
+                {% csrf_token %}
+                {% crispy form %}
+              </form>
+            </div>
+          </div>
+        </div>        
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

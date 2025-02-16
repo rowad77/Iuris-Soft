@@ -4,6 +4,8 @@ from django.db import models
 class CaseStatus(models.TextChoices):
     OPEN = "OPEN", "Open"
     CLOSED = "CLOSED", "Closed"
+    IN_PROGRESS = "IPG", "In Progress"
+    ON_HOLD = "OHD", "On Hold"
     PENDING = "PENDING", "Pending"
 
 
@@ -15,6 +17,7 @@ class DocumentType(models.TextChoices):
 
 
 class UserType(models.TextChoices):
+    CLIENT = "Client", "Client"
     JUDGE = "Judge", "Judge"
     ADVOCATE = "Advocate", "Advocate"
     LAWYER = "Lawyer", "Lawyer"
