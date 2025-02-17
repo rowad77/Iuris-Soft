@@ -11,7 +11,7 @@ from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, redirect
 
 from accounts.models import Client
-from cases.forms import CaseForm, DocumentForm
+from cases.forms import CaseForm, DocumentForm, DocumentFormSet
 from cases.models.cases import Case, Document
 
 
@@ -77,10 +77,36 @@ class CaseCreateView(CreateView):
             return redirect("case:client-create")
         return super().dispatch(request, *args, **kwargs)
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['document_formset'] = DocumentFormSet(self.request.POST, self.request.FILES)
+        else:
+            context['document_formset'] = DocumentFormSet()
+        return context
+
     def form_valid(self, form):
-        case = form.save()
-        messages.success(self.request, f"{case.title.title()} successfully created.")
-        return super().form_valid(form)
+        context = self.get_context_data()
+        document_formset = context['document_formset']
+
+        if form.is_valid() and document_formset.is_valid():
+            # Save the main case form
+            self.object = form.save()
+            
+            # Attach the formset to the instance and save it
+            document_formset.instance = self.object
+            document_formset.save()
+
+            messages.success(self.request, f"{self.object.title.title()} successfully created.")
+            return super().form_valid(form)
+        else:
+            # If the form or formset is invalid, handle the errors and display them
+            if not form.is_valid():
+                print("Form Errors: ", form.errors)
+            if not document_formset.is_valid():
+                print("Formset Errors: ", document_formset.errors)
+
+            return self.render_to_response(self.get_context_data(form=form, document_formset=document_formset))
     
 class CaseUpdateView(UpdateView):
     model = Case

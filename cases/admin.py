@@ -78,8 +78,6 @@ class DocumentAdmin(admin.ModelAdmin):
     list_display = ("title", "case", "document_type")
     list_filter = ("document_type",)
     search_fields = ("title", "case__case_number", "description")
-    raw_id_fields = ("case",)
-    prepopulated_fields = {"slug": ("title",)}
 
 
 @admin.register(Invoice)

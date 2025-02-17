@@ -25,12 +25,53 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="d-flex justify-content-center">
-              <form method="post" class="col-lg-12">
-                {% csrf_token %}
-                {% crispy form %}
-              </form>
-            </div>
+              <div class="d-flex justify-content-center">
+                <form method="post" class="col-lg-12" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Case Form Fields -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div id="div_id_title" class="mb-3">
+                                  <label for="id_title" class="form-label requiredField">Title<span class="asteriskField">*</span></label>
+                                  {{ form.title }}
+                              </div>
+                          </div>
+                          <div class="col-md-6">
+                              <div id="div_id_client" class="mb-3">
+                                  <label for="id_client" class="form-label requiredField">Client<span class="asteriskField">*</span></label>
+                                  {{ form.client }}
+                              </div>
+                          </div>
+                          <div class="col-md-6">
+                            <div id="div_id_client" class="mb-3">
+                                <label for="id_client" class="form-label requiredField">Status<span class="asteriskField">*</span></label>
+                                {{ form.status }}
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <div id="div_id_client" class="mb-3">
+                                <label for="id_client" class="form-label requiredField">Description<span class="asteriskField">*</span></label>
+                                {{ form.description }}
+                            </div>
+                          </div>
+                      </div>
+                      
+                      <!-- Add other CaseForm fields here (case_type, status, assigned_lawyer, assigned_users, description) -->
+              
+                      <!-- Document FormSet -->
+                      <h3>Upload Documents</h3>
+                      {{ document_formset.management_form }}
+                      {% for document_form in document_formset %}
+                          <div class="document-form">
+                              {{ document_form.as_p }}
+                          </div>
+                      {% endfor %}
+              
+                      <!-- Submit Button -->
+                      <input type="submit" name="submit" value="Save Case" class="btn btn-primary" id="submit-id-submit">
+                  </form>
+              </div>
           </div>
         </div>        
       </div>
