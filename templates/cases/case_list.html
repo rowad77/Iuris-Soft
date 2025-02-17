@@ -30,7 +30,7 @@
                         <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Case Type: activate to sort column ascending">Status</th>
                         <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Assigned Lawyer: activate to sort column ascending">Assigned Lawyer</th>
                         <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Assigned user: activate to sort column ascending">Assigned user</th>
-                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Action: activate to sort column ascending">Action</th>
+                        <th class="sorting text-center" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Action: activate to sort column ascending">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -47,14 +47,16 @@
                         <td>{{ case.get_status_display }}</td>
                         <td>{{ case.assigned_lawyer.get_full_name|default:"Not Assigned" }}</td>
                         <td>
-                            {% for user in case.assigned_users.all %}
-                                {{ user.get_full_name }}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
+                            <ul>
+                              {% for user in case.assigned_users.all %}
+                                  {% if user.get_full_name %}<li>{{ user.get_full_name }}</li>{% if not forloop.last %}{% endif %}{% endif %}
+                              {% endfor %}
+                            </ul>
                         </td>
-                        <td>
-                            <a href="{% url 'case:case-update' user.slug %}" class="btn btn-sm btn-warning">Edit</a>
-                            <a href="{% url 'case:case-delete' user.slug %}" class="btn btn-sm btn-danger">Delete</a>
-                            <a href="{% url 'case:case-detail' user.slug %}" class="btn btn-sm btn-info">View</a>
+                        <td class="text-center">
+                            <a href="{% url 'case:case-update' case.slug %}" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="{% url 'case:case-delete' case.slug %}" class="btn btn-sm btn-danger">Delete</a>
+                            <a href="{% url 'case:case-detail' case.slug %}" class="btn btn-sm btn-info">View</a>
                         </td>
                     </tr>
                     {% endfor %}

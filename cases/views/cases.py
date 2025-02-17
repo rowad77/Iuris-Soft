@@ -84,14 +84,23 @@ class CaseCreateView(CreateView):
     
 class CaseUpdateView(UpdateView):
     model = Case
+    form_class = CaseForm
     template_name = "cases/case_form.html"
-    fields = ["title", "description", "client", "status"]
+    success_url = reverse_lazy('case:case-list')
 
+    def form_valid(self, form):
+        case = form.save()
+        messages.success(self.request, f"{case.title.title()} successfully updated.")
+        return super().form_valid(form)
 
 class CaseDeleteView(DeleteView):
     model = Case
     template_name = "cases/case_confirm_delete.html"
-    success_url = reverse_lazy("case-list")
+    success_url = reverse_lazy("case:case-list")
+
+    def form_valid(self, form):
+        messages.success(self.request, f"Successfully deleted.")
+        return super().form_valid(form)
 
 
 # Document views

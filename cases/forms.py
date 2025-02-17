@@ -18,19 +18,22 @@ class CaseForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['assigned_users'].label = "Support Users"
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(
-                Column('title', css_class='col-md-12'),
-                Column('client', css_class='col-md-12'),
-                Column('case_type', css_class='col-md-12'),
+                Column('title', css_class='col-md-6'),
+                Column('client', css_class='col-md-6'),
             ),
             Row(
-                Column('status', css_class='col-md-12'),
-                Column('assigned_lawyer', css_class='col-md-12'),
+                Column('case_type', css_class='col-md-6'),
+                Column('status', css_class='col-md-6'),
+            ),
+            Row(
+                Column('assigned_lawyer', css_class='col-md-6'),
+                Column('assigned_users', css_class='col-md-6'),
             ),
             'description',
-            'assigned_users',
             Submit('submit', 'Save Case', css_class='btn btn-primary')
         )
 

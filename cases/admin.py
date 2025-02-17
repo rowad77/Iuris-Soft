@@ -37,6 +37,7 @@ class ClientAdmin(admin.ModelAdmin):
     )
 
 
+
 @admin.register(Case)
 class CaseAdmin(admin.ModelAdmin):
     list_display = ("case_number", "client", "status", "assigned_lawyer")

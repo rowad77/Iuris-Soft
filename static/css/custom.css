@@ -13,17 +13,15 @@
   border: var(--bs-border-width) solid var(--bs-border-color) !important;
 }
 
-.app-content {
-  display: flex;
-  flex-direction: column;
-  min-height: calc(
-    100vh - 80px
-  );
+#tbl-case-list tbody {
+  flex: 1;
+  overflow-y: auto;
 }
-
-.app-content .container-fluid {
-  flex-grow: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+.table>tbody>tr>td, 
+.table>tbody>tr>th, 
+.table>tfoot>tr>td, 
+.table>tfoot>tr>th, 
+.table>thead>tr>td, 
+.table>thead>tr>th {
+      vertical-align: middle;
+ }

@@ -1,0 +1,55 @@
+{% extends 'base.html' %} 
+{% block content %}
+<div class="app-content-header">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-6"><a href="{% url "dashboard:index" %}">Dashboard</a></div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-end">
+          <li class="breadcrumb-item"><a href="{% url "case:case-list" %}">All Cases</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Manage Users</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="app-content">
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-lg-4 p-5 m-5">
+        <div class="card mb-4">
+          <div class="card-body">
+            <p><strong>Case Number:</strong> {{ object.case_number }}</p>
+            <p><strong>Title:</strong> {{ object.title|title }}</p>
+            <p><strong>Client:</strong> {{ object.client|title }}</p>
+            <p><strong>Assigned Lawyer:</strong> {{ object.assigned_lawyer }}</p>
+            <p><strong>Support Team:</strong><br/>
+              <ul>
+                {% for user in object.assigned_users.all  %}
+                  {% if user.get_full_name %}<li>{{ user.get_full_name }}</li>{% endif %}
+                {% endfor %}
+              </ul>
+            </p>
+            <p><strong>Case Type:</strong><br/>
+              <ul>
+                {% for type in object.case_type.all  %}
+                    <li>{{ type.title|title }}</li>
+                {% endfor %}
+              </ul>
+            </p>
+            <p><strong>Status:</strong> {{ object.get_status_display }}</p>
+            <p><strong>Description:</strong><br/> {{ object.description|safe }}</p>
+            <a href="{% url 'case:case-update' object.slug %}" class="btn btn-warning"
+              >Edit</a
+            >
+            <a href="{% url 'case:case-list' %}" class="btn btn-secondary"
+              >Back</a
+            >
+          </div>
+        </div>        
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

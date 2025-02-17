@@ -56,8 +56,7 @@
     <div class="app-wrapper">
       {% include 'inc/navbar.html' %}     
       {% include 'inc/sidebar.html' %}
-      <main class="app-main d-flex flex-column justify-content-center">
-        <div class="container-fluid h-100 d-flex flex-column justify-content-center">
+      <main class="app-main d-flex flex-column">
           {% if messages %}
             <div class="container-fluid mt-1">
               {% for message in messages %}
@@ -69,7 +68,6 @@
             </div>
           {% endif %}
           {% block content %}{% endblock content %}
-        </div>
       </main>
       <footer class="app-footer">
         <div class="float-end d-none d-sm-inline">Empowering Legal Professionals</div>
