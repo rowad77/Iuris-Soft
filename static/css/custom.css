@@ -25,3 +25,10 @@
 .table>thead>tr>th {
       vertical-align: middle;
  }
+
+ .document-form {
+  margin-bottom: 20px;
+}
+small{
+  font-size: xx-small !important;
+}

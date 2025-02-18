@@ -28,49 +28,55 @@
               <div class="d-flex justify-content-center">
                 <form method="post" class="col-lg-12" enctype="multipart/form-data">
                     {% csrf_token %}
-                    
-                    <!-- Case Form Fields -->
-                    <div class="row">
-                        <div class="col-md-6">
+                      <div class="row">
+                          <div class="col-md-6">
                             <div id="div_id_title" class="mb-3">
-                                  <label for="id_title" class="form-label requiredField">Title<span class="asteriskField">*</span></label>
-                                  {{ form.title }}
-                              </div>
-                          </div>
+                                  {{ form.title|as_crispy_field }}
+                            </div>
+                          </div>                        
                           <div class="col-md-6">
                               <div id="div_id_client" class="mb-3">
-                                  <label for="id_client" class="form-label requiredField">Client<span class="asteriskField">*</span></label>
-                                  {{ form.client }}
+                                  {{ form.client|as_crispy_field }}
                               </div>
                           </div>
                           <div class="col-md-6">
-                            <div id="div_id_client" class="mb-3">
-                                <label for="id_client" class="form-label requiredField">Status<span class="asteriskField">*</span></label>
-                                {{ form.status }}
+                            <div id="div_id_title" class="mb-3">
+                                  {{ form.case_type|as_crispy_field }}
                             </div>
                           </div>
                           <div class="col-md-6">
                             <div id="div_id_client" class="mb-3">
-                                <label for="id_client" class="form-label requiredField">Description<span class="asteriskField">*</span></label>
-                                {{ form.description }}
+                                {{ form.status|as_crispy_field }}
                             </div>
                           </div>
-                      </div>
-                      
-                      <!-- Add other CaseForm fields here (case_type, status, assigned_lawyer, assigned_users, description) -->
-              
-                      <!-- Document FormSet -->
-                      <h3>Upload Documents</h3>
-                      {{ document_formset.management_form }}
-                      {% for document_form in document_formset %}
-                          <div class="document-form">
-                              {{ document_form.as_p }}
+                          <div class="col-md-6">
+                            <div id="div_id_title" class="mb-3">
+                                  {{ form.assigned_lawyer|as_crispy_field }}
+                            </div>
                           </div>
-                      {% endfor %}
-              
-                      <!-- Submit Button -->
-                      <input type="submit" name="submit" value="Save Case" class="btn btn-primary" id="submit-id-submit">
-                  </form>
+                          <div class="col-md-6">
+                            <div id="div_id_client" class="mb-3">
+                                {{ form.assigned_users|as_crispy_field }}
+                            </div>
+                          </div>
+                          <div class="col-md-12">
+                            <div id="div_id_client" class="mb-3">
+                                {{ form.description|as_crispy_field }}
+                            </div>
+                          </div>
+                          {{ document_formset.management_form }}
+                          <h3>Case Documents</h3>
+                          {% for document_form in document_formset %}
+                              <div class="d-flex col-md-12">
+                                  <div class="document-form">
+                                      {% crispy document_form %}
+                                  </div>
+                              </div>
+                          {% endfor %}
+                          <input type="submit" name="submit" value="Save Case" class="btn btn-primary" id="submit-id-submit">
+                      </div>
+                    
+                </form>
               </div>
           </div>
         </div>        

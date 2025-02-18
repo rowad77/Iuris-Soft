@@ -40,16 +40,18 @@
                         <td>{{ case.title|title }}</td>
                         <td>{{ case.client.user.get_full_name|title }}</td>
                         <td>
-                          {% for type in case.case_type.all %}
-                              {{ type.name }}{% if not forloop.last %}, {% endif %}
-                          {% endfor %}
+                          <ul>
+                            {% for type in case.case_type.all %}
+                              <li>{{ type.title|title }}</li>
+                            {% endfor %}
+                          </ul>
                         </td>
                         <td>{{ case.get_status_display }}</td>
                         <td>{{ case.assigned_lawyer.get_full_name|default:"Not Assigned" }}</td>
                         <td>
                             <ul>
                               {% for user in case.assigned_users.all %}
-                                  {% if user.get_full_name %}<li>{{ user.get_full_name }}</li>{% if not forloop.last %}{% endif %}{% endif %}
+                                  {% if user.get_full_name %}<li>{{ user.get_full_name }}</li>{% endif %}
                               {% endfor %}
                             </ul>
                         </td>

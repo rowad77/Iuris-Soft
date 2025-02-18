@@ -9,13 +9,18 @@ from django.contrib import messages
 
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, redirect
+from django.forms import inlineformset_factory
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, HTML
 
 from accounts.models import Client
-from cases.forms import CaseForm, DocumentForm, DocumentFormSet
+from cases.forms import CaseForm, DocumentForm
 from cases.models.cases import Case, Document
 
 
-# Client views
+DocumentFormSet = inlineformset_factory(
+    Case, Document, form=DocumentForm, extra=3, can_delete=True
+)
 class ClientListView(ListView):
     model = Client
     template_name = "cases/client_list.html"
@@ -100,25 +105,81 @@ class CaseCreateView(CreateView):
             messages.success(self.request, f"{self.object.title.title()} successfully created.")
             return super().form_valid(form)
         else:
-            # If the form or formset is invalid, handle the errors and display them
             if not form.is_valid():
                 print("Form Errors: ", form.errors)
             if not document_formset.is_valid():
                 print("Formset Errors: ", document_formset.errors)
 
             return self.render_to_response(self.get_context_data(form=form, document_formset=document_formset))
-    
+
+
 class CaseUpdateView(UpdateView):
     model = Case
     form_class = CaseForm
     template_name = "cases/case_form.html"
     success_url = reverse_lazy('case:case-list')
 
-    def form_valid(self, form):
-        case = form.save()
-        messages.success(self.request, f"{case.title.title()} successfully updated.")
-        return super().form_valid(form)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        DocumentFormSet = inlineformset_factory(
+            Case, Document, form=DocumentForm, 
+            extra=1, can_delete=True
+        )
+        
+        if self.request.method == 'POST':
+            context['document_formset'] = DocumentFormSet(
+                self.request.POST, 
+                self.request.FILES,
+                instance=self.object
+            )
+        else:
+            context['document_formset'] = DocumentFormSet(instance=self.object)
+            
+        helper = FormHelper()
+        helper.form_tag = False
+        helper.layout = Layout(
+            HTML("{{ document_formset.management_form }}")
+        )
+        context['document_formset_helper'] = helper
+        return context
+    
 
+    def form_valid(self, form):
+        context = self.get_context_data()
+        document_formset = context['document_formset']
+        
+        # Debug: Check formset data and errors
+        print("Form data: ", self.request.POST)
+        print("File data: ", self.request.FILES)
+        print("Formset errors: ", document_formset.errors)
+
+        # Validate the form and formset
+        if form.is_valid() and document_formset.is_valid():
+            # Save the main Case form
+            self.object = form.save()
+
+            # Make sure formset is linked to the updated Case object
+            document_formset.instance = self.object
+
+            # Save new and updated documents
+            document_formset.save()
+
+            # Success message
+            messages.success(self.request, f"{self.object.title.title()} successfully updated.")
+            return super().form_valid(form)
+        else:
+            # Debug: Log formset errors
+            print("Formset validation failed")
+            print("Form Errors: ", form.errors)
+            print("Document Formset Errors: ", document_formset.errors)
+
+            return self.form_invalid(form)
+
+    def form_invalid(self, form):
+        # Debug: Print formset and form errors to help with debugging
+        context = self.get_context_data()
+        document_formset = context['document_formset']
+        return self.render_to_response(self.get_context_data(form=form))
 class CaseDeleteView(DeleteView):
     model = Case
     template_name = "cases/case_confirm_delete.html"
