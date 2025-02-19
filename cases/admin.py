@@ -40,10 +40,11 @@ class ClientAdmin(admin.ModelAdmin):
 
 @admin.register(Case)
 class CaseAdmin(admin.ModelAdmin):
-    list_display = ("case_number", "client", "status", "assigned_lawyer")
+    list_display = ("case_number", "title", "client", "status", "assigned_lawyer")
     list_filter = ("status", "case_type")
     search_fields = (
         "case_number",
+        "title",
         "client__first_name",
         "client__last_name",
         "description",

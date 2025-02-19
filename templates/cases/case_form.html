@@ -64,12 +64,32 @@
                                 {{ form.description|as_crispy_field }}
                             </div>
                           </div>
-                          {{ document_formset.management_form }}
+                          {{ document_formset.management_form }}  <!-- Ensure this is present -->
                           <h3>Case Documents</h3>
                           {% for document_form in document_formset %}
                               <div class="d-flex col-md-12">
                                   <div class="document-form">
-                                      {% crispy document_form %}
+                                      {{ document_form.id }}  <!-- Hidden field for document ID -->
+                                      <div class="row">
+                                          <div class="col-md-3">
+                                              {{ document_form.title|as_crispy_field }}
+                                          </div>
+                                          <div class="col-md-3">
+                                              {{ document_form.document_type|as_crispy_field }}
+                                          </div>
+                                          <div class="col-md-6">
+                                              {{ document_form.file|as_crispy_field }}
+                                          </div>
+                                          <div class="col-md-12">
+                                              {{ document_form.description|as_crispy_field }}
+                                          </div>
+                                      </div>
+                                      {% if document_form.instance.pk %}
+                                          <div class="form-group">
+                                              <label for="{{ document_form.DELETE.id_for_label }}">Delete:</label>
+                                              {{ document_form.DELETE }}
+                                          </div>
+                                      {% endif %}
                                   </div>
                               </div>
                           {% endfor %}
@@ -85,3 +105,19 @@
   </div>
 </div>
 {% endblock %}
+{% block extra_js %}
+<script>
+  document.getElementById("add-document").addEventListener("click", function() {
+      let totalForms = document.querySelector("#id_document_set-TOTAL_FORMS");
+      let currentCount = parseInt(totalForms.value);
+      let formsetContainer = document.getElementById("document-formset");
+  
+      let newForm = formsetContainer.children[currentCount].cloneNode(true);
+      let regex = new RegExp(`-${currentCount}-`, "g");
+      newForm.innerHTML = newForm.innerHTML.replace(regex, `-${currentCount + 1}-`);
+      
+      formsetContainer.appendChild(newForm);
+      totalForms.value = currentCount + 1;
+  });
+  </script>
+{% endblock extra_js %}

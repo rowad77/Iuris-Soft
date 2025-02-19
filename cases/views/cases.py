@@ -9,7 +9,7 @@ from django.contrib import messages
 
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, redirect
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory,modelformset_factory
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, HTML
 
@@ -21,6 +21,7 @@ from cases.models.cases import Case, Document
 DocumentFormSet = inlineformset_factory(
     Case, Document, form=DocumentForm, extra=3, can_delete=True
 )
+
 class ClientListView(ListView):
     model = Client
     template_name = "cases/client_list.html"
@@ -147,39 +148,20 @@ class CaseUpdateView(UpdateView):
     def form_valid(self, form):
         context = self.get_context_data()
         document_formset = context['document_formset']
-        
-        # Debug: Check formset data and errors
-        print("Form data: ", self.request.POST)
-        print("File data: ", self.request.FILES)
-        print("Formset errors: ", document_formset.errors)
-
-        # Validate the form and formset
         if form.is_valid() and document_formset.is_valid():
-            # Save the main Case form
             self.object = form.save()
-
-            # Make sure formset is linked to the updated Case object
             document_formset.instance = self.object
-
-            # Save new and updated documents
             document_formset.save()
-
-            # Success message
             messages.success(self.request, f"{self.object.title.title()} successfully updated.")
             return super().form_valid(form)
         else:
-            # Debug: Log formset errors
-            print("Formset validation failed")
-            print("Form Errors: ", form.errors)
-            print("Document Formset Errors: ", document_formset.errors)
-
             return self.form_invalid(form)
 
     def form_invalid(self, form):
-        # Debug: Print formset and form errors to help with debugging
         context = self.get_context_data()
         document_formset = context['document_formset']
         return self.render_to_response(self.get_context_data(form=form))
+
 class CaseDeleteView(DeleteView):
     model = Case
     template_name = "cases/case_confirm_delete.html"
