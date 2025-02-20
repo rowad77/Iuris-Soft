@@ -50,6 +50,9 @@ class CaseForm(forms.ModelForm):
 
 class DocumentForm(forms.ModelForm):
     id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
+    case = forms.ModelChoiceField(
+        queryset=Case.objects.all(), required=False, widget=forms.Select,empty_label="(No Case Selected)"
+    )
     title = forms.CharField(required=False)
     document_type = forms.ChoiceField(
         choices=DocumentType.choices, required=False, widget=forms.Select
@@ -61,7 +64,7 @@ class DocumentForm(forms.ModelForm):
 
     class Meta:
         model = Document
-        fields = ['id', "title", "document_type", "file", "description"]
+        fields = ['id',"case", "title", "document_type", "file", "description"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

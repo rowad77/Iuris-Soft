@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="app-content-header">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-6"><h3 class="mb-0">All Documents</h3></div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-end">
+          <a href="{% url "case:document-create" %}"><li class="breadcrumb-item btn btn-success text-white fw-bold">Add a Document</li></a>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="app-content">
+  <div class="container-fluid">
+    <div class="row justify-content-center w-100">
+      <div class="col-lg-12">
+        <div class="card mb-4">
+          <div class="card-body">
+              <table id="tbl-document-list" class="table table-bordered table-striped dataTable dtr-inline w-100" aria-describedby="example1_info">
+                <thead>
+                    <tr>
+                        <th class="sorting sorting_asc w-10" style="width:0.1%" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Username: activate to sort column descending">#</th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Title: activate to sort column ascending">Document Title</th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Case: activate to sort column ascending">Case</th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Type: activate to sort column ascending">Type</th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="File: activate to sort column ascending">File</th>
+                        <th class="sorting text-center" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Action: activate to sort column ascending">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for document in documents %}
+                    <tr class="{% cycle 'odd' 'even' %}">
+                        <td class="dtr-control sorting_1" tabindex="0">{{forloop.counter}}</td>
+                        <td>{{ document.title|title|default:"<span class='badge badge-warning'>Not Set</span>" }}</td>
+                        <td>{{ document.case.title|title }}</td>
+                        <td>{{ document.get_document_type_display }}</td>
+                        <td>{% if document.file %}<a href="{{ document.get_absolute_url }}" class="btn btn-sm btn-info">File</a>{% else %}<span class='badge badge-warning'>Not Set</span>{% endif %}</td>
+                        <td class="text-center">
+                            <a href="{% url 'case:document-update' document.slug %}" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="{% url 'case:document-delete' document.slug %}" class="btn btn-sm btn-danger">Delete</a>
+                            <a href="{{ document.get_absolute_url }}" class="btn btn-sm btn-info">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th rowspan="1" colspan="1">#</th>
+                        <th rowspan="1" colspan="1">Document Title</th>
+                        <th rowspan="1" colspan="1">Case</th>
+                        <th rowspan="1" colspan="1">Type</th>
+                        <th rowspan="1" colspan="1">File</th>
+                        <th rowspan="1" colspan="1">Action</th>
+                    </tr>
+                </tfoot>
+              </table>
+          </div>
+        </div>        
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  $(document).ready(function() {
+    $('#tbl-document-list').DataTable({
+        "pageLength": 10,
+        "ordering": true,
+        "searching": true,
+        "responsive": true
+    });
+});
+</script>
+{% endblock extra_js %}

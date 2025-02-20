@@ -32,3 +32,8 @@
 small{
   font-size: xx-small !important;
 }
+
+.badge-warning {
+  color: #212529;
+  background-color: #ffc107;
+}

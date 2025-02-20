@@ -1,3 +1,5 @@
+import mimetypes
+from django.utils.safestring import mark_safe
 from django.views.generic import (
     ListView,
     DetailView,
@@ -175,33 +177,81 @@ class CaseDeleteView(DeleteView):
 # Document views
 class DocumentListView(ListView):
     model = Document
-    template_name = "cases/document_list.html"
     context_object_name = "documents"
+    
+    def get_queryset(self):
+        return (
+            Document.objects.select_related("case")
+            .only("id", "title", "case__id", "case__title", "document_type", "file", "description")
+            .order_by("-created")
+        )
 
 
 class DocumentDetailView(DetailView):
     model = Document
     template_name = "cases/document_detail.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        document = self.object
 
+        if document.file and document.file.name:
+            file_url = document.file.url
+            mime_type, _ = mimetypes.guess_type(file_url)
+
+            if mime_type:
+                if mime_type.startswith("image"):
+                    preview = f'<img src="{file_url}" alt="{document.title}" style="max-width: 100%;">'
+                elif mime_type == "application/pdf":
+                    preview = f'<iframe src="{file_url}" width="100%" height="600px"></iframe>'
+                elif mime_type.startswith("text"):
+                    try:
+                        with document.file.open("r", encoding="utf-8") as f:
+                            preview = f"<pre>{f.read()[:1000]}</pre>"  # Limit preview length
+                    except Exception:
+                        preview = "<p>Unable to preview this text file.</p>"
+                else:
+                    preview = "<p>Preview not available for this file type.</p>"
+            else:
+                preview = "<p>File type unknown.</p>"
+        else:
+            preview = "<p>No file uploaded.</p>"
+
+        context["preview"] = mark_safe(preview)
+        return context
+    
 class DocumentCreateView(CreateView):
     model = Document
     form_class = DocumentForm
-    template_name = 'cases/document_form.html'
+    template_name = "cases/document_form.html"
 
     def form_valid(self, form):
-        form.instance.case = get_object_or_404(Case, pk=self.kwargs['case_pk'])
+        case = form.cleaned_data.get("case")
+        if not case and "case_pk" in self.kwargs:
+            try:
+                case = Case.objects.get(pk=self.kwargs["case_pk"])
+            except Case.DoesNotExist:
+                case = None 
+        form.instance.case = case
+        messages.success(self.request, f"{form.instance.title.title()} successfully created.")
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('cases:case-detail', kwargs={'pk': self.object.case.pk})
-class DocumentUpdateView(UpdateView):
+        return reverse_lazy("case:document-detail", kwargs={"slug": self.object.slug})
+
+class DocumentUpdateView(UpdateView): #LoginRequiredMixin,
     model = Document
+    form_class = DocumentForm
     template_name = "cases/document_form.html"
-    fields = ["title", "case", "document_type", "file"]
 
-
+    def get_success_url(self):
+        return reverse_lazy("case:document-detail", kwargs={"slug": self.object.slug})
+    
 class DocumentDeleteView(DeleteView):
     model = Document
     template_name = "cases/document_confirm_delete.html"
-    success_url = reverse_lazy("document-list")
+    success_url = reverse_lazy("case:document-list")
+
+    def form_valid(self, form):
+        messages.success(self.request, f"Successfully deleted.")
+        return super().form_valid(form)

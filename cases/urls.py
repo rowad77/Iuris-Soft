@@ -51,19 +51,20 @@ urlpatterns = [
     path("<str:slug>/delete/", CaseDeleteView.as_view(), name="case-delete"),
     # Document URLs
     path("documents/", DocumentListView.as_view(), name="document-list"),
+    path("documents/create/", DocumentCreateView.as_view(), name="document-create"),
     path(
-        "documents/<int:pk>/",
+        "documents/<str:slug>/",
         DocumentDetailView.as_view(),
         name="document-detail",
     ),
-    path("documents/create/", DocumentCreateView.as_view(), name="document-create"),
+   
     path(
-        "documents/<int:pk>/update/",
+        "documents/<str:slug>/update/",
         DocumentUpdateView.as_view(),
         name="document-update",
     ),
     path(
-        "documents/<int:pk>/delete/",
+        "documents/<str:slug>/delete/",
         DocumentDeleteView.as_view(),
         name="document-delete",
     ),
