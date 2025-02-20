@@ -42,11 +42,16 @@ def log_case_activity(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Document)
 def log_document_activity(sender, instance, created, **kwargs):
-    if created:
-        CaseActivity.objects.create(case=instance.case, activity=f"Document {instance.title} added to case {instance.case.case_number}.")
+    if instance.case:
+        if created:
+            activity_msg = f"Document {instance.title} added to case {instance.case.case_number}."
+        else:
+            activity_msg = f"Document {instance.title} updated in case {instance.case.case_number}."        
+        CaseActivity.objects.create(case=instance.case, activity=activity_msg)
     else:
-        CaseActivity.objects.create(case=instance.case, activity=f"Document {instance.title} updated in case {instance.case.case_number}.")
+        print(f"Document {instance.title} was created/updated without a case.")  # Debugging message
 
 @receiver(post_delete, sender=Document)
 def log_document_deletion(sender, instance, **kwargs):
-    CaseActivity.objects.create(case=instance.case, activity=f"Document {instance.title} deleted from case {instance.case.case_number}.")
+    if instance.case:
+        CaseActivity.objects.create(case=instance.case, activity=f"Document {instance.title} deleted from case {instance.case.case_number}.")

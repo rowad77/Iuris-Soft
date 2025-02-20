@@ -117,7 +117,7 @@ class CaseRuling(SlugMixin, TimestampMixin, models.Model):
 
 class Document(SlugMixin, TimestampMixin, models.Model):
     title = models.CharField(max_length=200)
-    case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name="documents")
+    case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name="documents",null=True)
     document_type = models.CharField(
         max_length=2, choices=DocumentType.choices, default=DocumentType.OTHER
     )
@@ -128,4 +128,4 @@ class Document(SlugMixin, TimestampMixin, models.Model):
         return self.title
 
     def get_absolute_url(self):
-        return reverse("cases:document-detail", kwargs={"slug": self.slug})
+        return reverse("case:document-detail", kwargs={"slug": self.slug})

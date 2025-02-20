@@ -37,12 +37,14 @@ class ClientAdmin(admin.ModelAdmin):
     )
 
 
+
 @admin.register(Case)
 class CaseAdmin(admin.ModelAdmin):
-    list_display = ("case_number", "client", "status", "assigned_lawyer")
+    list_display = ("case_number", "title", "client", "status", "assigned_lawyer")
     list_filter = ("status", "case_type")
     search_fields = (
         "case_number",
+        "title",
         "client__first_name",
         "client__last_name",
         "description",
@@ -77,8 +79,6 @@ class DocumentAdmin(admin.ModelAdmin):
     list_display = ("title", "case", "document_type")
     list_filter = ("document_type",)
     search_fields = ("title", "case__case_number", "description")
-    raw_id_fields = ("case",)
-    prepopulated_fields = {"slug": ("title",)}
 
 
 @admin.register(Invoice)
