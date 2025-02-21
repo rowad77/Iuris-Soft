@@ -139,3 +139,16 @@ class RetainerUsageAdmin(admin.ModelAdmin):
         "description",
     )
     raw_id_fields = ("retainer",)
+
+
+@admin.action(description="Bill selected Time Entries (Retainer or Invoice)")
+def bill_time_entries(modeladmin, request, queryset):
+    unbilled_entries = queryset.filter(is_billed=False)
+    for entry in unbilled_entries:
+        entry.auto_deduct_or_invoice()
+    modeladmin.message_user(request, f"Billed {unbilled_entries.count()} time entries.")
+
+@admin.register(TimeEntry)
+class TimeEntryAdmin(admin.ModelAdmin):
+    list_display = ("case", "client", "user", "start_time", "end_time", "is_billed")
+    actions = [bill_time_entries]

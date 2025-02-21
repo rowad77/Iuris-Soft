@@ -111,3 +111,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 X_FRAME_OPTIONS = "SAMEORIGIN"
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"  # Use Redis as broker
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
