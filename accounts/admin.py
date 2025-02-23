@@ -35,6 +35,7 @@ class UserAdmin(BaseUserAdmin):
                 "fields": (
                     "first_name",
                     "last_name",
+                    "hourly_rate",
                     "email",
                     "phone_number",
                     "password",

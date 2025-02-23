@@ -101,20 +101,6 @@ class InvoiceAdmin(admin.ModelAdmin):
     )
     raw_id_fields = ("case", "client")
 
-
-@admin.register(TimeEntry)
-class TimeEntryAdmin(admin.ModelAdmin):
-    list_display = ("case", "user", "start_time", "end_time", "hours_worked")
-    list_filter = ("start_time", "end_time")
-    search_fields = ("case__case_number", "user__username", "description")
-    raw_id_fields = ("case", "user")
-
-    def hours_worked(self, obj):
-        return round(obj.hours_worked, 2)
-
-    hours_worked.short_description = "Hours Worked"
-
-
 class RetainerUsageInline(admin.TabularInline):
     model = RetainerUsage
     extra = 1
@@ -125,10 +111,6 @@ class ClientRetainerAdmin(admin.ModelAdmin):
     list_display = ("client", "amount", "start_date", "end_date", "remaining_balance")
     list_filter = ("start_date", "end_date")
     search_fields = ("client__first_name", "client__last_name")
-    raw_id_fields = ("client",)
-    inlines = [RetainerUsageInline]
-
-
 @admin.register(RetainerUsage)
 class RetainerUsageAdmin(admin.ModelAdmin):
     list_display = ("retainer", "amount", "date", "description")
