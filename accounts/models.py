@@ -19,6 +19,7 @@ class User(AbstractUser,  SlugMixin,TimestampMixin):
     organization = models.ForeignKey(
         "accounts.Organization", on_delete=models.CASCADE, null=True, blank=True
     )
+    is_supervisor = models.BooleanField(default=False)
     is_superadmin = models.BooleanField(default=False)
     user_type = models.CharField(
         max_length=20, choices=UserType.choices, default=UserType.NORMAL

@@ -7,7 +7,6 @@ from django.db import models, transaction
 from decimal import Decimal
 from django.core.exceptions import ValidationError
 
-from cases.tasks import notify_low_retainer_balance, notify_supervisor_for_approval, send_invoice_email
 from utils.mixins import SlugMixin, TimestampMixin
 
 User = get_user_model()
@@ -31,6 +30,7 @@ class InvoiceApproval(models.Model):
 
     def approve(self):
         """Mark as approved and trigger invoice sending."""
+        from cases.tasks import send_invoice_email
         self.is_approved = True
         self.approved_at = timezone.now()
         self.save()
@@ -49,6 +49,7 @@ class ClientRetainer(SlugMixin, TimestampMixin, models.Model):
         return f"Retainer for {self.client} - ${self.amount}"
     
 class ClientRetainer(SlugMixin, TimestampMixin, models.Model):
+    
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     start_date = models.DateField()
@@ -59,6 +60,7 @@ class ClientRetainer(SlugMixin, TimestampMixin, models.Model):
 
     def check_low_balance(self):
         """Check if retainer is low and trigger a Celery task for notification."""
+        from cases.tasks import notify_low_retainer_balance
         if self.remaining_balance <= self.low_balance_threshold and not self.low_balance_notified:
             notify_low_retainer_balance.delay(self.client.id, self.remaining_balance)
             self.low_balance_notified = True  # Prevent multiple notifications
@@ -104,12 +106,13 @@ class TimeEntry(SlugMixin, TimestampMixin, models.Model):
             return  
 
         with transaction.atomic():
+            from cases.tasks import notify_supervisor_for_approval
             billable_amount = self.billable_amount
             retainer = ClientRetainer.objects.filter(
                 client=self.client,
                 start_date__lte=timezone.now().date(),
                 end_date__gte=timezone.now().date(),
-                remaining_balance__gt=0  
+                # remaining_balance__gt=0  
             ).order_by('-end_date').first()  
 
             if retainer:
@@ -168,49 +171,6 @@ class TimeEntry(SlugMixin, TimestampMixin, models.Model):
 
             self.is_billed = True
             self.save()
-
-
-
-    # def auto_deduct_or_invoice(self):
-    #     """Deduct from an active retainer or generate an invoice if no retainer is available."""
-    #     if self.is_billed:
-    #         return  # Already billed, do nothing
-
-    #     with transaction.atomic():
-    #         retainer = ClientRetainer.objects.filter(
-    #             client=self.client,
-    #             start_date__lte=timezone.now().date(),
-    #             end_date__gte=timezone.now().date(),
-    #             remaining_balance__gte=self.billable_amount
-    #         ).first()
-
-    #         if retainer:
-    #             # Deduct from the retainer
-    #             retainer.remaining_balance -= self.billable_amount
-    #             retainer.save()
-
-    #             # Create RetainerUsage record
-    #             retainer_usage = RetainerUsage.objects.create(
-    #                 retainer=retainer,
-    #                 time_entry=self,
-    #                 amount=self.billable_amount,
-    #                 description=f"Billed {self.hours_worked:.2f} hours from retainer."
-    #             )
-    #             self.retainer_usage = retainer_usage
-    #         else:
-    #             # Generate an invoice if no retainer is available
-    #             invoice = Invoice.objects.create(
-    #                 case=self.case,
-    #                 client=self.client,
-    #                 invoice_number=f"INV-{timezone.now().strftime('%Y%m%d%H%M%S')}",
-    #                 date_issued=timezone.now().date(),
-    #                 due_date=timezone.now().date() + timezone.timedelta(days=30),
-    #                 amount=self.billable_amount,
-    #                 is_paid=False
-    #             )
-
-    #         self.is_billed = True
-    #         self.save()
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

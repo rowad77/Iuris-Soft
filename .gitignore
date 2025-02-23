@@ -139,6 +139,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+celerybeat-schedule.bak
+celerybeat-schedule.dat
+celerybeat-schedule.dir
 
 # Spyder project settings
 .spyderproject
