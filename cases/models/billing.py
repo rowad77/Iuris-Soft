@@ -85,14 +85,23 @@ class TimeEntry(SlugMixin, TimestampMixin, models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    end_time = models.DateTimeField(blank=True,null=True)
     description = models.TextField(blank=True, null=True)
     is_billed = models.BooleanField(default=False)
     retainer_usage = models.OneToOneField("RetainerUsage", null=True, blank=True, on_delete=models.SET_NULL)
 
     @property
+    def is_active(self):
+        return self.end_time is None  # Check if the entry is still running
+
+    @staticmethod
+    def user_has_active_entry(user):
+        return TimeEntry.objects.filter(user=user, end_time__isnull=True).exists()
+
+    @property
     def hours_worked(self):
-        return (self.end_time - self.start_time).total_seconds() / 3600
+        if self.end_time:
+            return (self.end_time - self.start_time).total_seconds() / 3600
 
     @property
     def billable_amount(self):
@@ -102,7 +111,7 @@ class TimeEntry(SlugMixin, TimestampMixin, models.Model):
 
     def auto_deduct_or_invoice(self):
         """Deduct from retainer, log transactions, and request invoice approval if needed."""
-        if self.is_billed:
+        if self.is_billed or not self.end_time:
             return  
 
         with transaction.atomic():
@@ -114,7 +123,6 @@ class TimeEntry(SlugMixin, TimestampMixin, models.Model):
                 end_date__gte=timezone.now().date(),
                 # remaining_balance__gt=0  
             ).order_by('-end_date').first()  
-
             if retainer:
                 if retainer.remaining_balance >= billable_amount:
                     retainer.remaining_balance -= billable_amount
@@ -173,8 +181,10 @@ class TimeEntry(SlugMixin, TimestampMixin, models.Model):
             self.save()
 
     def save(self, *args, **kwargs):
+        is_stopping = self.end_time is not None and not TimeEntry.objects.filter(id=self.id, end_time__isnull=False).exists()
         super().save(*args, **kwargs)
-        self.auto_deduct_or_invoice()
+        if is_stopping:  # Only run billing when end_time is set
+            self.auto_deduct_or_invoice()
 
     def __str__(self):
         return f"{self.case} - {self.client} - {self.user} - {self.start_time.date()}"

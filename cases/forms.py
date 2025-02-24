@@ -1,5 +1,7 @@
 from django import forms
 
+from accounts.models import Client
+from cases.models.billing import TimeEntry
 from utils.enum import DocumentType
 from .models import Case, Document
 
@@ -95,3 +97,37 @@ class DocumentForm(forms.ModelForm):
             if not any(cleaned_data.get(field) for field in ['title', 'document_type', 'file', 'description']):
                 raise forms.ValidationError("At least one field must be filled for new documents.")
         return cleaned_data
+    
+class TimeEntryForm(forms.ModelForm):
+    class Meta:
+        model = TimeEntry
+        fields = ["client", "case", "description"]
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+
+        if user:
+            self.fields["client"].queryset = Client.objects.filter(user=user)
+
+        self.fields["case"].queryset = Case.objects.none()
+        self.fields["case"].widget.attrs["disabled"] = True
+        if "client" in self.data:
+            try:
+                client_id = int(self.data.get("client"))
+                self.fields["case"].queryset = Case.objects.filter(client_id=client_id)
+            except (ValueError, TypeError):
+                pass  # Invalid input; keep case queryset empty
+
+        self.helper = FormHelper()
+        self.helper.form_method = "post"
+        self.helper.layout = Layout(
+            Row(
+                Column("client", css_class="form-group col-md-6"),
+                Column("case", css_class="form-group col-md-6"),
+                css_class="form-row"
+            ),
+            "description",
+            Submit("submit", "Start Time Entry", css_class="btn btn-primary"),
+        )
+

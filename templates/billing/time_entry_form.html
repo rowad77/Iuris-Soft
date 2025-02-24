@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Start a Time Entry</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-success">Start</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  $(document).ready(function() {
+      $("#id_client").change(function() {
+          var clientId = $(this).val();
+          var caseDropdown = $("#id_case");
+  
+          if (clientId) {
+              $.ajax({
+                  url: "{% url 'case:load-cases' %}",
+                  data: { client_id: clientId },
+                  success: function(data) {
+                      caseDropdown.empty().append('<option value="">---------</option>');
+                      $.each(data.cases, function(index, caseObj) {
+                          caseDropdown.append(`<option value="${caseObj.id}">${caseObj.title}</option>`);
+                      });
+                      caseDropdown.prop("disabled", false);
+                  },
+                  error: function() {
+                      alert("Error loading cases. Please try again.");
+                  }
+              });
+          } else {
+              caseDropdown.empty().append('<option value="">---------</option>').prop("disabled", true);
+          }
+      });
+  });
+  </script>
+  {% endblock extra_js %}

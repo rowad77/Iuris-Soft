@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="app-content-header">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-6"><h3 class="mb-0">All Time Entries</h3></div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-end">
+        {% if user_has_active_entry %}
+          <h3 id="timer" style="display: none;">00:00:00</h3>
+          <button class="btn btn-danger stop-timer" data-entry-slug="{{ active_entry.slug }}">Stop</button>         
+        {% else %}
+          <a href="{% url "case:start-time-entry" %}"><li class="breadcrumb-item btn btn-success text-white fw-bold">Start</li></a>
+        {% endif %}
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="app-content">
+  <div class="container-fluid">
+    <div class="row justify-content-center w-100">
+      <div class="col-lg-12">
+        <div class="card mb-4">
+          <div class="card-body">
+              <table id="tbl-case-list" class="table table-bordered table-striped dataTable dtr-inline w-100" aria-describedby="example1_info">
+                <thead>
+                    <tr>
+                        <th class="sorting sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Username: activate to sort column descending">
+                            Case Number
+                        </th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Title: activate to sort column ascending">Title</th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Client: activate to sort column ascending">Client</th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Case Type: activate to sort column ascending">Type</th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Case Type: activate to sort column ascending">Status</th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Assigned Lawyer: activate to sort column ascending">Assigned Lawyer</th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Assigned user: activate to sort column ascending">Assigned user</th>
+                        <th class="sorting text-center" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Action: activate to sort column ascending">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for time in time_entries %}
+                    <tr class="{% cycle 'odd' 'even' %}">
+                        <td class="dtr-control sorting_1" tabindex="0">{{ time.case.case_number|upper }}</td>
+                        <td>{{ time.case.title|title }}</td>
+                        <td>{{ time.client.user.get_full_name|title }}</td>
+                        <td>{{ time.case.title|title }}</td>
+                        <td>{{ time.start_time }}</td>
+                        <td>{{ time.end_time }}</td>
+                        <td>
+                            <ul>
+                              {% for user in case.assigned_users.all %}
+                                  {% if user.get_full_name %}<li>{{ user.get_full_name }}</li>{% endif %}
+                              {% endfor %}
+                            </ul>
+                        </td>
+                        <td class="text-center">
+                            <a href="#" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                            <a href="#" class="btn btn-sm btn-info">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th rowspan="1" colspan="1">Case Number</th>
+                        <th rowspan="1" colspan="1">Title</th>
+                        <th rowspan="1" colspan="1">Client</th>
+                        <th rowspan="1" colspan="1">Type</th>
+                        <th rowspan="1" colspan="1">Status</th>
+                        <th rowspan="1" colspan="1">Assigned Lawyer</th>
+                        <th rowspan="1" colspan="1">Assigned user</th>
+                        <th rowspan="1" colspan="1">Action</th>
+                    </tr>
+                </tfoot>
+              </table>
+          </div>
+        </div>        
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      {% if user_has_active_entry %}
+          var startTime = new Date("{{ active_entry.start_time|date:'c' }}");  // Convert Django DateTime to JS Date
+          document.getElementById("timer").style.display = "block";  // Show the timer
+  
+          function updateTimer() {
+              var now = new Date();
+              var diff = Math.floor((now - startTime) / 1000);  // Time elapsed in seconds
+  
+              var hours = Math.floor(diff / 3600).toString().padStart(2, "0");
+              var minutes = Math.floor((diff % 3600) / 60).toString().padStart(2, "0");
+              var seconds = (diff % 60).toString().padStart(2, "0");
+  
+              document.getElementById("timer").textContent = `${hours}:${minutes}:${seconds}`;
+          }
+  
+          updateTimer();
+          setInterval(updateTimer, 1000);
+      {% endif %}
+  
+      $(".stop-timer").click(function() {
+          var entrySlug = $(this).data("entry-slug");
+          $.ajax({
+              url: "{% url 'case:stop-time-entry' %}",
+              type: "POST",
+              data: { csrfmiddlewaretoken: "{{ csrf_token }}" },
+              success: function(response) {
+                  alert(response.message);
+                  location.reload();
+              },
+              error: function(response) {
+                  alert(response.responseJSON.error);
+              }
+          });
+      });
+  });
+</script>
+
+  
+<script>
+  $(document).ready(function() {
+    $('#tbl-case-list').DataTable({
+        "pageLength": 10,
+        "ordering": true,
+        "searching": true,
+        "responsive": true
+    });
+  });
+</script>
+{% endblock extra_js %}

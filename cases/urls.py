@@ -3,11 +3,14 @@ from django.urls import path
 from accounts.views import ClientCreateView, ClientListView
 
 from cases.views.billing import (
+    CaseByClientView,
     ClientRetainerCreateView,
     ClientRetainerListView,
     InvoiceCreateView,
     InvoiceDetailView,
     InvoiceListView,
+    StartTimeEntryView,
+    StopTimeEntryView,
     TimeEntryCreateView,
     TimeEntryListView,
 )
@@ -49,6 +52,10 @@ urlpatterns = [
     path("case-create/", CaseCreateView.as_view(), name="case-create"),
     path("<str:slug>/update/", CaseUpdateView.as_view(), name="case-update"),
     path("<str:slug>/delete/", CaseDeleteView.as_view(), name="case-delete"),
+    # Billing
+    path("start-time/", StartTimeEntryView.as_view(), name="start-time-entry"),
+    path("stop/", StopTimeEntryView.as_view(), name="stop-time-entry"),
+    path("load-cases/", CaseByClientView.as_view(), name="load-cases"),
     # Document URLs
     path("documents/", DocumentListView.as_view(), name="document-list"),
     path("documents/create/", DocumentCreateView.as_view(), name="document-create"),
@@ -68,7 +75,7 @@ urlpatterns = [
         DocumentDeleteView.as_view(),
         name="document-delete",
     ),
-    path("time-entries/", TimeEntryListView.as_view(), name="time_entry_list"),
+    path("time-entries/", TimeEntryListView.as_view(), name="time-entry-list"),
     path(
         "time-entries/create/", TimeEntryCreateView.as_view(), name="time_entry_create"
     ),
