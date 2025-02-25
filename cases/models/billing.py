@@ -101,16 +101,8 @@ class TimeEntry(SlugMixin, TimestampMixin, models.Model):
         if hourly_rate is None:
             return Decimal(0)
         return round(Decimal(self.hours_worked) * Decimal(hourly_rate), 2)
-    # @property
-    # def hours_worked(self):
-    #     if self.end_time:
-    #         return (self.end_time - self.start_time).total_seconds() / 3600
-
-    # @property
-    # def billable_amount(self):
-    #     """Calculate the billable amount for this time entry (assuming a $100/hour rate)."""
-    #     hourly_rate = self.user.hourly_rate
-    #     return round(Decimal(self.hours_worked) * hourly_rate, 2)
+  
+  
 
     def auto_deduct_or_invoice(self):
         """Deduct from retainer, log transactions, and request invoice approval if needed."""
@@ -195,77 +187,6 @@ class TimeEntry(SlugMixin, TimestampMixin, models.Model):
             self.is_billed = True
             self.save()
             print(f"Marked TimeEntry {self.id} as billed.")
-
-    # def auto_deduct_or_invoice(self):
-    #     """Deduct from retainer, log transactions, and request invoice approval if needed."""
-    #     if self.is_billed or not self.end_time:
-    #         return  
-
-    #     with transaction.atomic():
-    #         from cases.tasks import notify_supervisor_for_approval
-    #         billable_amount = self.billable_amount
-    #         retainer = ClientRetainer.objects.filter(
-    #             client=self.client,
-    #             start_date__lte=timezone.now().date(),
-    #             end_date__gte=timezone.now().date(),
-    #             # remaining_balance__gt=0  
-    #         ).order_by('-end_date').first()  
-    #         if retainer:
-    #             if retainer.remaining_balance >= billable_amount:
-    #                 retainer.remaining_balance -= billable_amount
-    #                 retainer.save()
-    #                 RetainerUsage.objects.create(
-    #                     retainer=retainer,
-    #                     time_entry=self,
-    #                     amount=billable_amount,
-    #                     description=f"Billed {self.hours_worked:.2f} hours from retainer."
-    #                 )
-    #             else:
-    #                 used_amount = retainer.remaining_balance
-    #                 remaining_due = billable_amount - used_amount
-    #                 retainer.remaining_balance = Decimal(0)
-    #                 retainer.save()
-    #                 RetainerUsage.objects.create(
-    #                     retainer=retainer,
-    #                     time_entry=self,
-    #                     amount=used_amount,
-    #                     description=f"Partially covered {used_amount:.2f}. Remaining {remaining_due:.2f} needs invoicing."
-    #                 )
-
-    #                 if remaining_due > 0:
-    #                     invoice = Invoice.objects.create(
-    #                         case=self.case,
-    #                         client=self.client,
-    #                         invoice_number=f"INV-{timezone.now().strftime('%Y%m%d%H%M%S')}",
-    #                         date_issued=timezone.now().date(),
-    #                         due_date=timezone.now().date() + timezone.timedelta(days=30),
-    #                         amount=remaining_due,
-    #                         is_paid=False
-    #                     )
-
-    #                     supervisor = User.objects.filter(is_supervisor=True).first()
-    #                     if supervisor:
-    #                         InvoiceApproval.objects.create(invoice=invoice, supervisor=supervisor)
-    #                         notify_supervisor_for_approval.delay(supervisor.id, invoice.id)
-
-    #         else:
-    #             invoice = Invoice.objects.create(
-    #                 case=self.case,
-    #                 client=self.client,
-    #                 invoice_number=f"INV-{timezone.now().strftime('%Y%m%d%H%M%S')}",
-    #                 date_issued=timezone.now().date(),
-    #                 due_date=timezone.now().date() + timezone.timedelta(days=30),
-    #                 amount=billable_amount,
-    #                 is_paid=False
-    #             )
-
-    #             supervisor = User.objects.filter(is_supervisor=True).first()
-    #             if supervisor:
-    #                 InvoiceApproval.objects.create(invoice=invoice, supervisor=supervisor)
-    #                 notify_supervisor_for_approval.delay(supervisor.id, invoice.id)
-
-    #         self.is_billed = True
-    #         self.save()
 
     def save(self, *args, **kwargs):
         is_stopping = self.end_time is not None and not TimeEntry.objects.filter(id=self.id, end_time__isnull=False).exists()
