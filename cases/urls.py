@@ -12,6 +12,8 @@ from cases.views.billing import (
     StartTimeEntryView,
     StopTimeEntryView,
     TimeEntryCreateView,
+    TimeEntryDeleteView,
+    TimeEntryDetailView,
     TimeEntryListView,
 )
 from cases.views.cases import (
@@ -47,7 +49,7 @@ urlpatterns = [
         name="client-delete",
     ),
     # Case URLs
-    path('', CaseListView.as_view(), name='case-list'),
+    path("", CaseListView.as_view(), name="case-list"),
     path("case/<str:slug>/", CaseDetailView.as_view(), name="case-detail"),
     path("case-create/", CaseCreateView.as_view(), name="case-create"),
     path("<str:slug>/update/", CaseUpdateView.as_view(), name="case-update"),
@@ -64,7 +66,6 @@ urlpatterns = [
         DocumentDetailView.as_view(),
         name="document-detail",
     ),
-   
     path(
         "documents/<str:slug>/update/",
         DocumentUpdateView.as_view(),
@@ -79,6 +80,8 @@ urlpatterns = [
     path(
         "time-entries/create/", TimeEntryCreateView.as_view(), name="time_entry_create"
     ),
+    path("time-entry/<str:slug>/", TimeEntryDetailView.as_view(), name="time-entry-detail"),
+    path("time-entry/<str:slug>/delete/", TimeEntryDeleteView.as_view(), name="time-entry-delete"),
     path("invoices/", InvoiceListView.as_view(), name="invoice_list"),
     path("invoices/create/", InvoiceCreateView.as_view(), name="invoice_create"),
     path("invoices/<int:pk>/", InvoiceDetailView.as_view(), name="invoice_detail"),

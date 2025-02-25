@@ -29,12 +29,11 @@
                         <th class="sorting sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Username: activate to sort column descending">
                             Case Number
                         </th>
-                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Title: activate to sort column ascending">Title</th>
                         <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Client: activate to sort column ascending">Client</th>
-                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Case Type: activate to sort column ascending">Type</th>
-                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Case Type: activate to sort column ascending">Status</th>
-                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Assigned Lawyer: activate to sort column ascending">Assigned Lawyer</th>
-                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Assigned user: activate to sort column ascending">Assigned user</th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Case Type: activate to sort column ascending">Case</th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Case Type: activate to sort column ascending">Start Time</th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Assigned Lawyer: activate to sort column ascending">End Time</th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Assigned user: activate to sort column ascending">Is Billed</th>
                         <th class="sorting text-center" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Action: activate to sort column ascending">Action</th>
                     </tr>
                 </thead>
@@ -42,22 +41,15 @@
                     {% for time in time_entries %}
                     <tr class="{% cycle 'odd' 'even' %}">
                         <td class="dtr-control sorting_1" tabindex="0">{{ time.case.case_number|upper }}</td>
-                        <td>{{ time.case.title|title }}</td>
                         <td>{{ time.client.user.get_full_name|title }}</td>
                         <td>{{ time.case.title|title }}</td>
                         <td>{{ time.start_time }}</td>
-                        <td>{{ time.end_time }}</td>
-                        <td>
-                            <ul>
-                              {% for user in case.assigned_users.all %}
-                                  {% if user.get_full_name %}<li>{{ user.get_full_name }}</li>{% endif %}
-                              {% endfor %}
-                            </ul>
-                        </td>
+                        <td>{{ time.end_time|default:"" }}</td>
+                        <td>{% if time.is_billed %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-x-circle-fill text-danger"></i>{% endif %}</td>
                         <td class="text-center">
                             <a href="#" class="btn btn-sm btn-warning">Edit</a>
-                            <a href="#" class="btn btn-sm btn-danger">Delete</a>
-                            <a href="#" class="btn btn-sm btn-info">View</a>
+                            <a href="{% url "case:time-entry-delete" time.slug %}" class="btn btn-sm btn-danger">Delete</a>
+                            <a href="{{time.get_absolute_url}}" class="btn btn-sm btn-info">View</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -65,12 +57,11 @@
                 <tfoot>
                     <tr>
                         <th rowspan="1" colspan="1">Case Number</th>
-                        <th rowspan="1" colspan="1">Title</th>
                         <th rowspan="1" colspan="1">Client</th>
-                        <th rowspan="1" colspan="1">Type</th>
-                        <th rowspan="1" colspan="1">Status</th>
-                        <th rowspan="1" colspan="1">Assigned Lawyer</th>
-                        <th rowspan="1" colspan="1">Assigned user</th>
+                        <th rowspan="1" colspan="1">Case</th>
+                        <th rowspan="1" colspan="1">Start Time</th>
+                        <th rowspan="1" colspan="1">End Time</th>
+                        <th rowspan="1" colspan="1">Is Billed</th>
                         <th rowspan="1" colspan="1">Action</th>
                     </tr>
                 </tfoot>

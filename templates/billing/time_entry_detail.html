@@ -1,0 +1,81 @@
+{% extends 'base.html' %} 
+{% block content %}
+<div class="app-content-header">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-6"><a href="{% url "dashboard:index" %}">Dashboard</a></div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-end">
+          <li class="breadcrumb-item"><a href="{% url "case:time-entry-list" %}">All Time Entries</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Manage Time Entries</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="app-content">
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-lg-6 p-5 m-5">
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="row">
+              <div class="row d-flex p-2">
+                <p><strong>Case:</strong> {{ time_entry.case }}</p>
+                <p><strong>Client:</strong> {{ time_entry.client }}</p>
+                <p><strong>User:</strong> {{ time_entry.user.get_full_name }}</p>
+                <p><strong>Start Time:</strong> {{ time_entry.start_time }}</p>
+                <p><strong>End Time:</strong> {{ time_entry.end_time|default:"Ongoing" }}</p>
+                <p><strong>Description:</strong>{% if time_entry.description %}<br/>{{ time_entry.description }}{% endif %} </p>
+                <p><strong>Hours Worked:</strong> {{ time_entry.hours_worked|floatformat:2 }}</p>
+                <p><strong>Billable Amount:</strong> {% if time_entry.billable_amount %}${{ time_entry.billable_amount }}{% endif %}</p>
+              </div>
+            </div>
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="card-title">Retainer Usage</h5>
+              </div>
+              <div class="card-body">
+                {% if retainer_usage %}
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th>Retainer</th>
+                        <th>Amount Used</th>
+                        <th>Date</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for usage in retainer_usage %}
+                        <tr>
+                          <td>{{ usage.retainer }}</td>
+                          <td>{{ usage.amount }}</td>
+                          <td>{{ usage.date }}</td>
+                          <td>
+                            <a href="{{ document.file.url }}" target="_blank" class="btn btn-primary btn-sm">View</a>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                {% else %}
+                  <p>No retainer usage recorded for this time entry.</p>
+                {% endif %}
+              </div>
+            </div>
+
+            <a href="#" class="btn btn-warning"
+              >Edit</a
+            >
+            <a href="{% url 'case:time-entry-list' %}" class="btn btn-secondary"
+              >Back</a
+            >
+          </div>
+        </div>        
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

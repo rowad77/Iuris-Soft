@@ -1,4 +1,4 @@
-from django.views.generic import CreateView, ListView, DetailView, View
+from django.views.generic import CreateView, ListView, DetailView, View, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.shortcuts import redirect
@@ -10,7 +10,7 @@ from django.contrib import messages
 from accounts.models import Client
 from cases.forms import TimeEntryForm
 from cases.models import CaseActivity
-from cases.models.billing import ClientRetainer, Invoice, TimeEntry
+from cases.models.billing import ClientRetainer, Invoice, RetainerUsage, TimeEntry
 from cases.models.cases import Case
 
 
@@ -32,11 +32,16 @@ class TimeEntryListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        active_entry = TimeEntry.objects.filter(user=self.request.user, end_time__isnull=True).first()
-        context['user_has_active_entry'] = active_entry is not None
-        context['active_entry'] = active_entry 
+        active_entry = TimeEntry.objects.filter(
+            user=self.request.user, end_time__isnull=True
+        ).first()
+        context["user_has_active_entry"] = active_entry is not None
+        context["active_entry"] = active_entry
         return context
-    
+
+    def get_queryset(self):
+        return TimeEntry.objects.filter(user=self.request.user).order_by("-created")
+
 
 class StartTimeEntryView(CreateView):
     model = TimeEntry
@@ -45,10 +50,15 @@ class StartTimeEntryView(CreateView):
     success_url = reverse_lazy("case:time-entry-list")
 
     def dispatch(self, request, *args, **kwargs):
-        active_entry = TimeEntry.objects.filter(user=request.user, end_time__isnull=True).first()
+        active_entry = TimeEntry.objects.filter(
+            user=request.user, end_time__isnull=True
+        ).first()
         if active_entry:
-            messages.warning(request, "You already have an active time entry. Please stop it before starting a new one.")
-            return redirect("case:time-entry-list")        
+            messages.warning(
+                request,
+                "You already have an active time entry. Please stop it before starting a new one.",
+            )
+            return redirect("case:time-entry-list")
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
@@ -60,9 +70,13 @@ class StartTimeEntryView(CreateView):
         form.instance.user = self.request.user
         form.instance.start_time = timezone.now()
         return super().form_valid(form)
+
+
 class StopTimeEntryView(View):
     def post(self, request, *args, **kwargs):
-        time_entry = TimeEntry.objects.filter(user=request.user, end_time__isnull=True).first()
+        time_entry = TimeEntry.objects.filter(
+            user=request.user, end_time__isnull=True
+        ).first()
         if time_entry:
             time_entry.end_time = timezone.now()
             time_entry.save()
@@ -70,6 +84,8 @@ class StopTimeEntryView(View):
             messages.success(request, "Time entry stopped successfully!")
             return JsonResponse({"message": "Time entry stopped successfully!"})
         return JsonResponse({"error": "No active time entry found."}, status=400)
+
+
 class CaseByClientView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         client_id = request.GET.get("client_id")
@@ -80,7 +96,8 @@ class CaseByClientView(LoginRequiredMixin, View):
         cases = Case.objects.filter(client=client).values("id", "title")
 
         return JsonResponse({"cases": list(cases)})
-    
+
+
 class InvoiceCreateView(LoginRequiredMixin, CreateView):
     model = Invoice
     fields = ["case", "client", "date_issued", "due_date", "amount"]
@@ -120,3 +137,26 @@ class ClientRetainerListView(LoginRequiredMixin, ListView):
     model = ClientRetainer
     template_name = "billing/client_retainer_list.html"
     context_object_name = "retainers"
+
+
+class TimeEntryDetailView(DetailView):
+    model = TimeEntry
+    template_name = "billing/time_entry_detail.html"
+    context_object_name = "time_entry"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        all_retainer_usages = RetainerUsage.objects.all()
+        retainer_usage_qs = RetainerUsage.objects.filter(time_entry=self.object)
+        context["retainer_usage"] = retainer_usage_qs
+        return context
+
+
+class TimeEntryDeleteView(DeleteView):
+    model = TimeEntry
+    template_name = "billing/time_entry_confirm_delete.html"
+    success_url = reverse_lazy("case:time-entry-list")
+
+    def form_valid(self, form):
+        messages.success(self.request, f"Successfully deleted.")
+        return super().form_valid(form)

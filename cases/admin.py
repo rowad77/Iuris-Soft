@@ -113,7 +113,7 @@ class ClientRetainerAdmin(admin.ModelAdmin):
     search_fields = ("client__first_name", "client__last_name")
 @admin.register(RetainerUsage)
 class RetainerUsageAdmin(admin.ModelAdmin):
-    list_display = ("retainer", "amount", "date", "description")
+    list_display = ("retainer","time_entry__case","amount", "date", "description")
     list_filter = ("date",)
     search_fields = (
         "retainer__client__first_name",
