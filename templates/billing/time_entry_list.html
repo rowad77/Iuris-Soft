@@ -6,12 +6,19 @@
       <div class="col-sm-6"><h3 class="mb-0">All Time Entries</h3></div>
       <div class="col-sm-6">
         <ol class="breadcrumb float-sm-end">
-        {% if user_has_active_entry %}
-          <h3 id="timer" style="display: none;">00:00:00</h3>
-          <button class="btn btn-danger stop-timer" data-entry-slug="{{ active_entry.slug }}">Stop</button>         
-        {% else %}
-          <a href="{% url "case:start-time-entry" %}"><li class="breadcrumb-item btn btn-success text-white fw-bold">Start</li></a>
-        {% endif %}
+          <div class="d-flex align-items-center h-100">
+            {% if user_has_active_entry %}
+                <a class="d-flex align-items-center mx-10" href="{{ active_entry.get_absolute_url }}">
+                    <h6 id="timer" class="mb-0 mx-1" style="display: none;">00:00:00</h6>
+                </a>
+                <button class="btn btn-danger stop-timer" data-entry-slug="{{ active_entry.slug }}">Stop</button>         
+            {% else %}
+                <a href="{% url 'case:start-time-entry' %}">
+                    <li class="breadcrumb-item btn btn-success text-white fw-bold">Start</li>
+                </a>
+            {% endif %}
+        </div>
+        
         </ol>
       </div>
     </div>
@@ -47,7 +54,7 @@
                         <td>{{ time.end_time|default:"" }}</td>
                         <td>{% if time.is_billed %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-x-circle-fill text-danger"></i>{% endif %}</td>
                         <td class="text-center">
-                            <a href="#" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="{% url "case:time-entry-update" time.slug %}" class="btn btn-sm btn-warning">Edit</a>
                             <a href="{% url "case:time-entry-delete" time.slug %}" class="btn btn-sm btn-danger">Delete</a>
                             <a href="{{time.get_absolute_url}}" class="btn btn-sm btn-info">View</a>
                         </td>

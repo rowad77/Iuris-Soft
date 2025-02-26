@@ -15,8 +15,10 @@ from cases.views.billing import (
     TimeEntryDeleteView,
     TimeEntryDetailView,
     TimeEntryListView,
+    TimeEntryUpdateView,
 )
 from cases.views.cases import (
+    ApplySignatureView,
     CaseCreateView,
     CaseDeleteView,
     CaseDetailView,
@@ -30,6 +32,7 @@ from cases.views.cases import (
     DocumentDetailView,
     DocumentListView,
     DocumentUpdateView,
+    SaveSignaturePositionView,
 )
 
 app_name = "case"
@@ -76,11 +79,13 @@ urlpatterns = [
         DocumentDeleteView.as_view(),
         name="document-delete",
     ),
+
     path("time-entries/", TimeEntryListView.as_view(), name="time-entry-list"),
     path(
         "time-entries/create/", TimeEntryCreateView.as_view(), name="time_entry_create"
     ),
     path("time-entry/<str:slug>/", TimeEntryDetailView.as_view(), name="time-entry-detail"),
+    path("time-entry/<str:slug>/update", TimeEntryUpdateView.as_view(), name="time-entry-update"),
     path("time-entry/<str:slug>/delete/", TimeEntryDeleteView.as_view(), name="time-entry-delete"),
     path("invoices/", InvoiceListView.as_view(), name="invoice_list"),
     path("invoices/create/", InvoiceCreateView.as_view(), name="invoice_create"),
@@ -91,4 +96,6 @@ urlpatterns = [
         ClientRetainerCreateView.as_view(),
         name="client_retainer_create",
     ),
+    path("document/<int:pk>/sign/", ApplySignatureView.as_view(), name="apply-signature"),
+    path("document/<int:pk>/save-signature/", SaveSignaturePositionView.as_view(), name="save-signature-position"),
 ]

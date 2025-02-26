@@ -83,7 +83,7 @@ class TimeEntry(SlugMixin, TimestampMixin, models.Model):
 
     @property
     def is_active(self):
-        return self.end_time is None  # Check if the entry is still running
+        return self.end_time is None
 
     @staticmethod
     def user_has_active_entry(user):

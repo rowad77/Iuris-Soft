@@ -1,4 +1,4 @@
-from django.views.generic import CreateView, ListView, DetailView, View, DeleteView
+from django.views.generic import CreateView, ListView, DetailView, View, DeleteView,UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.shortcuts import redirect
@@ -77,14 +77,21 @@ class StopTimeEntryView(View):
         time_entry = TimeEntry.objects.filter(
             user=request.user, end_time__isnull=True
         ).first()
+        
         if time_entry:
             time_entry.end_time = timezone.now()
             time_entry.save()
             time_entry.auto_deduct_or_invoice()
             messages.success(request, "Time entry stopped successfully!")
-            return JsonResponse({"message": "Time entry stopped successfully!"})
-        return JsonResponse({"error": "No active time entry found."}, status=400)
 
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return JsonResponse({"message": "Time entry stopped successfully!"})
+            return redirect("case:time-entry-list")
+
+        messages.error(request, "No active time entry found.")
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"error": "No active time entry found."}, status=400)
+        return redirect("case:time-entry-list")
 
 class CaseByClientView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -151,7 +158,10 @@ class TimeEntryDetailView(DetailView):
         context["retainer_usage"] = retainer_usage_qs
         return context
 
-
+class TimeEntryUpdateView(UpdateView):
+    model = TimeEntry
+    template_name = "billing/time_entry_form.html"
+    fields = ["description"]
 class TimeEntryDeleteView(DeleteView):
     model = TimeEntry
     template_name = "billing/time_entry_confirm_delete.html"

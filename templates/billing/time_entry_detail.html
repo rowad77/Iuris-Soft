@@ -13,7 +13,6 @@
     </div>
   </div>
 </div>
-
 <div class="app-content">
   <div class="container-fluid">
     <div class="row justify-content-center">
@@ -65,13 +64,16 @@
                 {% endif %}
               </div>
             </div>
-
-            <a href="#" class="btn btn-warning"
-              >Edit</a
-            >
-            <a href="{% url 'case:time-entry-list' %}" class="btn btn-secondary"
-              >Back</a
-            >
+            <div class="d-flex">
+              <a href="{% url "case:time-entry-update" time_entry.slug %}" class="btn btn-warning">Edit</a>
+              <a href="{% url 'case:time-entry-list' %}" class="btn btn-secondary mx-2">Back</a>
+              {% if time_entry.is_active %}
+                <form method="POST" action="{% url 'case:stop-time-entry' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Stop</button>
+                </form>
+              {% endif %}
+            </div>
           </div>
         </div>        
       </div>
