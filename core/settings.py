@@ -118,3 +118,30 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 CELERY_BROKER_URL = "redis://localhost:6379/0"  # Use Redis as broker
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
+
+CASE_DUE_NOTIFICATION_DAYS = 7
+
+def get_admins():
+    admins_str = os.getenv("ADMINS", "")  #e.g Multiple Admins in .env ADMINS=Superadmin:adminone@gmail.com,Support Lead:support@yourdomain.com
+    admins = []
+    if admins_str:
+        for admin_entry in admins_str.split(","):
+            name, email = admin_entry.split(":")
+            admins.append((name.strip(), email.strip()))
+    return admins
+
+ADMINS = get_admins()
+
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() == "true"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
+
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BROKER_CONNECTION_RETRY = True
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 100
+CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 3600}

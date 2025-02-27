@@ -6,6 +6,8 @@ from django_countries.fields import CountryField
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
 from django.core.exceptions import ValidationError
+from datetime import date, timedelta
+from django.conf import settings
 
 from utils.enum import CaseStatus, DocumentType
 from utils.mixins import AddressAndPhoneNumberMixin, SlugMixin, TimestampMixin
@@ -53,8 +55,15 @@ class Case(SlugMixin, TimestampMixin, models.Model):
     approved_by = models.ForeignKey(
         User, related_name="approved_cases", on_delete=models.SET_NULL, null=True, blank=True
     )
+    due_date = models.DateField(null=True, blank=True)
 
     COST_THRESHOLD = 5000.00
+
+    def is_due_soon(self):
+        if not self.due_date:
+            return False
+        threshold_date = date.today() + timedelta(days=settings.CASE_DUE_NOTIFICATION_DAYS)
+        return self.due_date <= threshold_date
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

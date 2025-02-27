@@ -89,7 +89,7 @@ class CaseCreateView(CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         user = request.user
-        if not Client.objects.filter(client_organization=user.organization).exists():
+        if not Client.objects.filter(user=user).exists():
             messages.warning(request, "No clients found in your organization. Please add a client first.")
             return redirect("case:client-create")
         return super().dispatch(request, *args, **kwargs)
@@ -107,10 +107,7 @@ class CaseCreateView(CreateView):
         document_formset = context['document_formset']
 
         if form.is_valid() and document_formset.is_valid():
-            # Save the main case form
             self.object = form.save()
-            
-            # Attach the formset to the instance and save it
             document_formset.instance = self.object
             document_formset.save()
 
@@ -196,39 +193,6 @@ class DocumentListView(ListView):
         )
 
 
-# class DocumentDetailView(DetailView):
-#     model = Document
-#     template_name = "cases/document_detail.html"
-
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         document = self.object
-
-#         if document.file and document.file.name:
-#             file_url = document.file.url
-#             mime_type, _ = mimetypes.guess_type(file_url)
-
-#             if mime_type:
-#                 if mime_type.startswith("image"):
-#                     preview = f'<img src="{file_url}" alt="{document.title}" style="max-width: 100%;">'
-#                 elif mime_type == "application/pdf":
-#                     preview = f'<iframe src="{file_url}" width="100%" height="600px"></iframe>'
-#                 elif mime_type.startswith("text"):
-#                     try:
-#                         with document.file.open("r", encoding="utf-8") as f:
-#                             preview = f"<pre>{f.read()[:1000]}</pre>"  # Limit preview length
-#                     except Exception:
-#                         preview = "<p>Unable to preview this text file.</p>"
-#                 else:
-#                     preview = "<p>Preview not available for this file type.</p>"
-#             else:
-#                 preview = "<p>File type unknown.</p>"
-#         else:
-#             preview = "<p>No file uploaded.</p>"
-
-#         context["preview"] = mark_safe(preview)
-#         return context
-
 class DocumentDetailView(DetailView):
     model = Document
     template_name = "cases/document_detail.html"
@@ -257,50 +221,6 @@ class DocumentDetailView(DetailView):
         context["signature"] = signature.signature.url if signature else None
 
         return context
-    
-# class DocumentDetailView(DetailView):
-#     model = Document
-#     template_name = "cases/document_detail.html"
-
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         document = self.object
-
-#         user = self.request.user
-#         signature = None
-#         if user.is_authenticated:
-#             try:
-#                 signature = user.signature.url if user.signature else None
-#             except User.DoesNotExist:
-#                 pass
-
-#         context['signature'] = signature
-
-#         if document.file and document.file.name:
-#             file_url = document.file.url
-#             mime_type, _ = mimetypes.guess_type(file_url)
-
-#             if mime_type:
-#                 if mime_type.startswith("image"):
-#                     preview = f'<img src="{file_url}" alt="{document.title}" style="max-width: 100%;">'
-#                 elif mime_type == "application/pdf":
-#                     preview = f'<iframe src="{file_url}" width="100%" height="600px"></iframe>'
-#                 elif mime_type.startswith("text"):
-#                     try:
-#                         with document.file.open("r", encoding="utf-8") as f:
-#                             preview = f"<pre>{f.read()[:1000]}</pre>"  # Limit preview length
-#                     except Exception:
-#                         preview = "<p>Unable to preview this text file.</p>"
-#                 else:
-#                     preview = "<p>Preview not available for this file type.</p>"
-#             else:
-#                 preview = "<p>File type unknown.</p>"
-#         else:
-#             preview = "<p>No file uploaded.</p>"
-
-#         context["preview"] = mark_safe(preview)
-#         return context
-
 
 class DocumentCreateView(CreateView):
     model = Document
@@ -344,9 +264,7 @@ class SaveSignaturePositionView(View):
         left = data.get("left")
         top = data.get("top")
 
-        # Save the position in the session or database
         request.session["signature_position"] = {"left": left, "top": top}
-
         return JsonResponse({"status": "success"})
     
 class ApplySignatureView(View):

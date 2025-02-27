@@ -17,7 +17,7 @@
 <div class="app-content">
   <div class="container-fluid">
     <div class="row justify-content-center">
-      <div class="col-lg-12">
+      <div class="col-lg-4">
         <div class="card mb-4">
           <div class="card-header border-0">
             <div class="d-flex justify-content-center">
@@ -25,10 +25,17 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="d-flex">
+            <div class="row d-flex">
               <form method="post">
                 {% csrf_token %}
-                {% crispy form %}
+                <div class="col-md-12">
+                    {{ form.user|as_crispy_field }}
+                </div>
+                <div class="col-md-12">
+                    {{ form.client_organization|as_crispy_field }}
+                </div>
+                {% comment %} {% crispy form %} {% endcomment %}
+                <button type="submit" class="btn btn-success">Create</button>
               </form>
             </div>
           </div>

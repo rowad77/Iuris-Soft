@@ -30,6 +30,7 @@
                         <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Case Type: activate to sort column ascending">Status</th>
                         <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Assigned Lawyer: activate to sort column ascending">Assigned Lawyer</th>
                         <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Assigned user: activate to sort column ascending">Assigned user</th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Due Date: activate to sort column ascending">Due Date</th>
                         <th class="sorting text-center" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Action: activate to sort column ascending">Action</th>
                     </tr>
                 </thead>
@@ -55,6 +56,7 @@
                               {% endfor %}
                             </ul>
                         </td>
+                        <td>{{ case.due_date|default:'<span class="text-danger"><i>Not set</i></span>' }}</td>
                         <td class="text-center">
                             <a href="{% url 'case:case-update' case.slug %}" class="btn btn-sm btn-warning">Edit</a>
                             <a href="{% url 'case:case-delete' case.slug %}" class="btn btn-sm btn-danger">Delete</a>
@@ -72,6 +74,7 @@
                         <th rowspan="1" colspan="1">Status</th>
                         <th rowspan="1" colspan="1">Assigned Lawyer</th>
                         <th rowspan="1" colspan="1">Assigned user</th>
+                        <th rowspan="1" colspan="1">Due Date</th>
                         <th rowspan="1" colspan="1">Action</th>
                     </tr>
                 </tfoot>

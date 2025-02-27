@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import DateInput
 
 from accounts.models import Client
 from cases.models.billing import TimeEntry
@@ -12,6 +13,10 @@ from .models import Case, Document
 
 
 class CaseForm(forms.ModelForm):
+    due_date = forms.DateTimeField(
+        input_formats=['%d/%m/%Y'],
+        widget=DateInput(attrs={'type': 'date'})
+    )
     class Meta:
         model = Case
         fields = [
@@ -22,6 +27,7 @@ class CaseForm(forms.ModelForm):
             "description",
             "assigned_lawyer",
             "assigned_users",
+            "due_date"
         ]
 
         widgets = {
@@ -35,8 +41,9 @@ class CaseForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(
-                Column("title", css_class="col-md-6"),
-                Column("client", css_class="col-md-6"),
+                Column("title", css_class="col-md-4"),
+                Column("client", css_class="col-md-4"),
+                Column("due_date", css_class="col-md-4"),
             ),
             Row(
                 Column("case_type", css_class="col-md-6"),
