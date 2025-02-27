@@ -5,6 +5,9 @@ from accounts.models import Client
 from django_countries.fields import CountryField
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
+from django.core.exceptions import ValidationError
+from datetime import date, timedelta
+from django.conf import settings
 
 from utils.enum import CaseStatus, DocumentType
 from utils.mixins import AddressAndPhoneNumberMixin, SlugMixin, TimestampMixin
@@ -29,7 +32,6 @@ class Case(SlugMixin, TimestampMixin, models.Model):
         max_length=50, default=generate_case_number, unique=True
     )
     title = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, unique=True, blank=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     case_type = models.ManyToManyField(CaseType, related_name="case_type", blank=True)
     status = models.CharField(
@@ -46,6 +48,22 @@ class Case(SlugMixin, TimestampMixin, models.Model):
     assigned_users = models.ManyToManyField(
         User, related_name="assigned_to", blank=True
     )
+    estimated_cost = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.00
+    )
+    requires_approval = models.BooleanField(default=False)
+    approved_by = models.ForeignKey(
+        User, related_name="approved_cases", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    due_date = models.DateField(null=True, blank=True)
+
+    COST_THRESHOLD = 5000.00
+
+    def is_due_soon(self):
+        if not self.due_date:
+            return False
+        threshold_date = date.today() + timedelta(days=settings.CASE_DUE_NOTIFICATION_DAYS)
+        return self.due_date <= threshold_date
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -85,6 +103,26 @@ class Case(SlugMixin, TimestampMixin, models.Model):
                 )
                 CaseActivity.objects.create(case=self, activity=activity_message)
         self._original_state = self._get_current_state()
+
+        if self.assigned_lawyer and not self._user_has_permission():
+            raise ValidationError("You do not have permission to assign this case.")
+        
+         # Require approval for high-cost cases
+        if self.estimated_cost > self.COST_THRESHOLD:
+            self.requires_approval = True
+
+          # Prevent saving if approval is required but not granted
+        if self.requires_approval and not self.approved_by:
+            raise ValidationError("This case requires approval before it can be assigned.")
+
+
+    def _user_has_permission(self):
+        """Check if the user modifying the case has the required role."""
+        allowed_roles = ["admin", "is_supervisor"]
+        return (
+            self.assigned_lawyer
+            and self.assigned_lawyer.groups.filter(name__in=allowed_roles).exists()
+        )
 
     def __str__(self):
         return self.case_number

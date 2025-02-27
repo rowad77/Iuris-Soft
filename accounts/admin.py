@@ -35,6 +35,7 @@ class UserAdmin(BaseUserAdmin):
                 "fields": (
                     "first_name",
                     "last_name",
+                    "hourly_rate",
                     "email",
                     "phone_number",
                     "password",
@@ -45,7 +46,8 @@ class UserAdmin(BaseUserAdmin):
             "PERMISSIONS",
             {
                 "fields": (
-                     "active",
+                    "admin",
+                    "active",
                     "staff",
                     "is_superuser",
                     "groups",

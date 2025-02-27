@@ -1,5 +1,8 @@
 from django import forms
+from django.forms import DateInput
 
+from accounts.models import Client
+from cases.models.billing import TimeEntry
 from utils.enum import DocumentType
 from .models import Case, Document
 
@@ -10,6 +13,10 @@ from .models import Case, Document
 
 
 class CaseForm(forms.ModelForm):
+    due_date = forms.DateTimeField(
+        input_formats=['%d/%m/%Y'],
+        widget=DateInput(attrs={'type': 'date'})
+    )
     class Meta:
         model = Case
         fields = [
@@ -20,6 +27,7 @@ class CaseForm(forms.ModelForm):
             "description",
             "assigned_lawyer",
             "assigned_users",
+            "due_date"
         ]
 
         widgets = {
@@ -33,8 +41,9 @@ class CaseForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(
-                Column("title", css_class="col-md-6"),
-                Column("client", css_class="col-md-6"),
+                Column("title", css_class="col-md-4"),
+                Column("client", css_class="col-md-4"),
+                Column("due_date", css_class="col-md-4"),
             ),
             Row(
                 Column("case_type", css_class="col-md-6"),
@@ -95,3 +104,37 @@ class DocumentForm(forms.ModelForm):
             if not any(cleaned_data.get(field) for field in ['title', 'document_type', 'file', 'description']):
                 raise forms.ValidationError("At least one field must be filled for new documents.")
         return cleaned_data
+    
+class TimeEntryForm(forms.ModelForm):
+    class Meta:
+        model = TimeEntry
+        fields = ["client", "case", "description"]
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+
+        if user:
+            self.fields["client"].queryset = Client.objects.filter(user=user)
+
+        self.fields["case"].queryset = Case.objects.none()
+        self.fields["case"].widget.attrs["disabled"] = True
+        if "client" in self.data:
+            try:
+                client_id = int(self.data.get("client"))
+                self.fields["case"].queryset = Case.objects.filter(client_id=client_id)
+            except (ValueError, TypeError):
+                pass  # Invalid input; keep case queryset empty
+
+        self.helper = FormHelper()
+        self.helper.form_method = "post"
+        self.helper.layout = Layout(
+            Row(
+                Column("client", css_class="form-group col-md-6"),
+                Column("case", css_class="form-group col-md-6"),
+                css_class="form-row"
+            ),
+            "description",
+            Submit("submit", "Start Time Entry", css_class="btn btn-primary"),
+        )
+

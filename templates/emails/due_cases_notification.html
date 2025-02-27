@@ -1,0 +1,23 @@
+<h2>Upcoming Due Cases (Next {{ threshold_date }})</h2>
+<table border="1" cellpadding="5" cellspacing="0" width="100%">
+    <thead>
+        <tr>
+            <th>Case Number</th>
+            <th>Title</th>
+            <th>Client</th>
+            <th>Due Date</th>
+            <th>Assigned Lawyer</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for case in cases %}
+            <tr>
+                <td>{{ case.case_number }}</td>
+                <td>{{ case.title }}</td>
+                <td>{{ case.client }}</td>
+                <td>{{ case.due_date }}</td>
+                <td>{{ case.assigned_lawyer.get_full_name }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -1,49 +1,105 @@
-{% extends 'base.html' %} 
+{% extends 'base.html' %}
+
 {% block content %}
-<div class="app-content-header">
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-sm-6"><a href="{% url "dashboard:index" %}">Dashboard</a></div>
-      <div class="col-sm-6">
-        <ol class="breadcrumb float-sm-end">
-          <li class="breadcrumb-item"><a href="{% url "case:document-list" %}">All Documents</a></li>
-        </ol>
-      </div>
-    </div>
+<div class="container">
+  <h2>{{ document.title }}</h2>
+  <p><strong>Case:</strong> {{ document.case.title|default:"Not Set" }}</p>
+  <p><strong>Description:</strong> {{ document.description }}</p>
+
+  <h3>Preview</h3>
+  <div id="pdf-container" class="position-relative">
+    <iframe id="pdf-preview" src="{{ document.file.url }}" width="100%" height="600px"></iframe>
+
+    {% if signature %}
+    <img id="signature" src="{{ signature }}" alt="Signature"
+      class="signature-draggable"
+      style="position: absolute; width: 100px; cursor: grab;" />
+    {% else %}
+    <p>No saved signature. <a href="{% url 'upload-signature' %}">Upload one</a></p>
+    {% endif %}
   </div>
+  <button id="apply-signature" class="btn btn-success mt-3">Sign Document</button>
+
+  {% comment %} <button id="save-signature" class="btn btn-primary mt-3">Save Signature Position</button> {% endcomment %}
 </div>
 
-<div class="app-content">
-  <div class="container-fluid">
-    <div class="row justify-content-center">
-      <div class="col-lg-6 p-5 m-5">
-        <div class="card mb-4">
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-12 p-2">
-                <h2>{{ document.title }}</h2>
-                <p><strong>Case:</strong> {{ document.case.title|default:"<span class='badge badge-warning'>Not Set</span>" }}</p>
-                <p><strong>Type:</strong> {{ document.get_document_type_display }}</p>
-                <p><strong>Description:</strong> {{ document.description }}</p>
-                {% if document.file %}
-                    <h3>Preview</h3>
-                    <iframe src="{{ document.file.url }}" width="100%" height="600px"></iframe>
-                    <p><a href="{{ document.file.url }}" target="_blank">Open PDF in New Tab</a></p>
-                {% else %}
-                    <p>No file available.</p>
-                {% endif %}
-              </div>
-            </div>
-            <a href="{% url 'case:document-update' object.slug %}" class="btn btn-warning"
-              >Edit</a
-            >
-            <a href="{% url 'case:document-list' %}" class="btn btn-secondary"
-              >Back</a
-            >
-          </div>
-        </div>        
-      </div>
-    </div>
-  </div>
-</div>
+<style>
+  .signature-draggable {
+    border: 2px dashed #000;
+    background: rgba(255, 255, 255, 0.7);
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      const signature = document.getElementById("signature");
+  
+      if (signature) {
+          let offsetX, offsetY, isDragging = false;
+  
+          // Start dragging
+          signature.addEventListener("mousedown", function (e) {
+              isDragging = true;
+  
+              // Get mouse position relative to the signature image
+              offsetX = e.clientX - signature.getBoundingClientRect().left;
+              offsetY = e.clientY - signature.getBoundingClientRect().top;
+  
+              // Set cursor style
+              signature.style.cursor = "grabbing";
+          });
+  
+          // Move the signature
+          document.addEventListener("mousemove", function (e) {
+              if (isDragging) {
+                  // Calculate new position relative to the container
+                  const container = document.getElementById("pdf-container");
+                  const containerRect = container.getBoundingClientRect();
+  
+                  let newX = e.clientX - containerRect.left - offsetX;
+                  let newY = e.clientY - containerRect.top - offsetY;
+  
+                  // Prevent dragging outside the PDF container
+                  newX = Math.max(0, Math.min(newX, containerRect.width - signature.clientWidth));
+                  newY = Math.max(0, Math.min(newY, containerRect.height - signature.clientHeight));
+  
+                  signature.style.left = newX + "px";
+                  signature.style.top = newY + "px";
+                  signature.style.position = "absolute";  // Ensure absolute positioning
+              }
+          });
+  
+          // Stop dragging
+          document.addEventListener("mouseup", function () {
+              isDragging = false;
+              signature.style.cursor = "grab";
+          });
+  
+          // Save the signature position
+          document.getElementById("apply-signature").addEventListener("click", function () {
+              const position = {
+                  left: signature.style.left,
+                  top: signature.style.top
+              };
+  
+              fetch("{% url 'case:save-signature-position' document.pk %}", {
+                  method: "POST",
+                  headers: {
+                      "X-CSRFToken": "{{ csrf_token }}",
+                      "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify(position)
+              })
+              .then(response => response.json())
+              .then(data => {
+                  if (data.status === "saved") {
+                      alert("Signature position saved!");
+                  }
+              })
+              .catch(error => console.error("Error:", error));
+          });
+      }
+  });
+  </script>
+  
 {% endblock %}

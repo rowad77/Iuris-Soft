@@ -19,6 +19,7 @@ class User(AbstractUser,  SlugMixin,TimestampMixin):
     organization = models.ForeignKey(
         "accounts.Organization", on_delete=models.CASCADE, null=True, blank=True
     )
+    is_supervisor = models.BooleanField(default=False)
     is_superadmin = models.BooleanField(default=False)
     user_type = models.CharField(
         max_length=20, choices=UserType.choices, default=UserType.NORMAL
@@ -27,6 +28,8 @@ class User(AbstractUser,  SlugMixin,TimestampMixin):
     hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     phone_number = models.CharField(max_length=20, blank=True)
     address = models.CharField(max_length=50, blank=True)
+    signature = models.ImageField(upload_to='signatures/', null=True, blank=True)
+
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username", "first_name", "last_name"]

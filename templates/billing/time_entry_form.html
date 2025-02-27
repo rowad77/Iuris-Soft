@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="app-content-header">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-6"><a href="{% url "dashboard:index" %}">Dashboard</a></div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-end">
+            <li class="breadcrumb-item"><a href="{% url "case:time-entry-list" %}">All Time Entries</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Manage Time Entries</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+</div>
+<div class="container d-flex justify-content-center mt-5">
+    <div class="col-6">
+        <h3 class="card-title"><h2>{% if form.instance.pk %}Edit {{form.instance.case.title|title}}'s details {% else %}Start a Time Entry{% endif %}</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <input type="submit" name="submit" value="{% if form.instance.pk %}Update{% else %}Start{% endif %}" class="btn btn-primary" id="submit-id-submit">
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  $(document).ready(function() {
+      $("#id_client").change(function() {
+          var clientId = $(this).val();
+          var caseDropdown = $("#id_case");
+  
+          if (clientId) {
+              $.ajax({
+                  url: "{% url 'case:load-cases' %}",
+                  data: { client_id: clientId },
+                  success: function(data) {
+                      caseDropdown.empty().append('<option value="">---------</option>');
+                      $.each(data.cases, function(index, caseObj) {
+                          caseDropdown.append(`<option value="${caseObj.id}">${caseObj.title}</option>`);
+                      });
+                      caseDropdown.prop("disabled", false);
+                  },
+                  error: function() {
+                      alert("Error loading cases. Please try again.");
+                  }
+              });
+          } else {
+              caseDropdown.empty().append('<option value="">---------</option>').prop("disabled", true);
+          }
+      });
+  });
+  </script>
+  {% endblock extra_js %}
