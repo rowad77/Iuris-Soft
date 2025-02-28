@@ -12,7 +12,7 @@ from django.views.generic import (
     DetailView,
     CreateView,
     UpdateView,
-    DeleteView,
+    DeleteView,TemplateView
 )
 from django.contrib import messages
 
@@ -294,3 +294,6 @@ class ApplySignatureView(View):
             document.file.save(new_pdf_path, ContentFile(f.read()))
 
         return JsonResponse({"status": "signed"})
+    
+class MyCaseCalendarView(TemplateView):
+    template_name = 'cases/calendar.html'

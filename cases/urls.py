@@ -32,6 +32,7 @@ from cases.views.cases import (
     DocumentDetailView,
     DocumentListView,
     DocumentUpdateView,
+    MyCaseCalendarView,
     SaveSignaturePositionView,
 )
 
@@ -98,4 +99,7 @@ urlpatterns = [
     ),
     path("document/<int:pk>/sign/", ApplySignatureView.as_view(), name="apply-signature"),
     path("document/<int:pk>/save-signature/", SaveSignaturePositionView.as_view(), name="save-signature-position"),
+    path("document/<int:pk>/save-signature/", SaveSignaturePositionView.as_view(), name="save-signature-position"),
+    # Calendar
+    path("calendar", MyCaseCalendarView.as_view(), name="calendar"),
 ]
